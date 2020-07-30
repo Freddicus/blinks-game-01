@@ -1,0 +1,6 @@
+{
+    "board": "Move38-manual:avr:blink",
+    "sketch": "game-01/game-01.ino",
+    "output": "../build",
+    "port": " "
+}

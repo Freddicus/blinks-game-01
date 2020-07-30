@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "~/Documents/Arduino/hardware/Move38-Blinks-Library/avr/**",
+                "${workspaceFolder}",
+                "~/git-projects/Blinks-SDK/cores/blinklib/**",
+                "/Users/alfredsterphone/Documents/Arduino/hardware/Move38-manual/avr/**"
+            ],
+            "defines": [
+                "TEST",
+                "DEBUG",
+                "F_CPU=8000000L",
+                "ARDUINO=10813",
+                "ARDUINO_AVR_BLINK",
+                "ARDUINO_ARCH_AVR"
+            ],
+            "forcedInclude": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
