@@ -1,6 +1,6 @@
 # Make Like A Tree and Leaf
 
-I got this idea looking out the window. 🌳 🤔 💭 
+I got this idea looking out the window. 🌳 🤔 💭
 
 ## Concept
 
@@ -43,7 +43,7 @@ Once the tree is grown, the gameplay loop begins. I'm still thinking about how t
 
 I'm still thinking about the rest. I might want to incorporate more clicking at this point rather than just simply adding and removing leaves for an amount of time.
 
-# About Me
+## About Me
 
 Hello! I'm a professional software engineer and an amateur game designer. What could go wrong? 😂 I live in Northern NJ with my wife and two children. I have *Freddicus Game Studios, LLC* registered in NJ, and I would consider releasing the game under that LLC if given the opportunity.
 

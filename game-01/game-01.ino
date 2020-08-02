@@ -78,12 +78,18 @@ byte headFaceRight;
 byte pulseDimness;
 
 bool isTrunkSplit;
+bool isFinalBranch;
+
+// --- growth ----
+bool growthInitiated;
 bool sendingGrowth;
 bool receivingGrowth;
 
 bool gotSetupMsg;
 
 Timer soilTimer;
+
+Timer txGrowthTimer;
 
 // --- game values ---
 
@@ -99,6 +105,7 @@ Timer soilTimer;
 #define FACE_SPROUT 0
 
 #define PULSE_LENGTH 2000
+#define GROWTH_DELAY_MS 1250
 
 // --- initialize ---
 
@@ -113,6 +120,9 @@ void setup() {
   headFaceRight = -1;
 
   isTrunkSplit = false;
+  isFinalBranch = false;
+
+  growthInitiated = false;
   sendingGrowth = false;
   receivingGrowth = false;
 
@@ -229,7 +239,7 @@ void updateColor() {
 }
 
 void handleGrowthColor() {
-  if (sendingGrowth) {
+  if (sendingGrowth || (growthInitiated == true && !txGrowthTimer.isExpired())) {
     pulseColorOnFace(COLOR_GROWTH, headFace);
   }
 
@@ -300,12 +310,18 @@ void playingSprout() {
   setValueSentOnFace(TRUNK_1, headFace);
 
   if (buttonSingleClicked()) {
+    txGrowthTimer.set(GROWTH_DELAY_MS);
+    growthInitiated = true;
+  }
+
+  if (growthInitiated == true && txGrowthTimer.isExpired()) {
     sendingGrowth = true;
   }
 
   // send up growth command / lights
   if (sendingGrowth) {
     sendGrowth();
+    growthInitiated = false;
   }
 
   if (getLastValueReceivedOnFace(headFace) == GROW_ACK) {
@@ -317,14 +333,14 @@ void playingTrunk() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
   byte rxHead = getLastValueReceivedOnFace(headFace);
 
+  // TODO: add growthTimer and use growthInitiated
   if (rxRear == GROW) {
     sendingGrowth = true;
-    setValueSentOnFace(GROW_ACK, rearFace);
+    ackGrowth();
     if (isTrunkSplit) {
-      setValueSentOnFace(GROW, headFaceLeft);
-      setValueSentOnFace(GROW, headFaceRight);
+      sendSplitGrowth();
     } else {
-      setValueSentOnFace(GROW, headFace);
+      sendGrowth();
     }
   }
 
@@ -334,6 +350,26 @@ void playingTrunk() {
 }
 
 void playingBranch() {
+  // do the growth stuff
+  byte rxRear = getLastValueReceivedOnFace(rearFace);
+  byte rxHead = getLastValueReceivedOnFace(headFace);
+
+  // TODO: add growthTimer and use growthInitiated
+  if (rxRear == GROW) {
+    setValueSentOnFace(GROW_ACK, rearFace);
+  }
+
+  if (rxRear == GROW && !isFinalBranch) {
+    sendingGrowth = true;
+  }
+
+  if (rxHead == GROW_ACK) {
+    sendingGrowth = false;
+  }
+
+  // 1. randomize bud affinity
+  // 2. communicate
+  // 3. indicate
 }
 
 // ----- Helpers ---------
@@ -345,8 +381,17 @@ void detectPanic() {
   }
 }
 
+void ackGrowth() {
+  setValueSentOnFace(GROW_ACK, rearFace);
+}
+
 void sendGrowth() {
   setValueSentOnFace(GROW, headFace);
+}
+
+void sendSplitGrowth() {
+  setValueSentOnFace(GROW, headFaceLeft);
+  setValueSentOnFace(GROW, headFaceRight);
 }
 
 void updatePulseDimness() {
