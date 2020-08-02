@@ -70,10 +70,12 @@ byte gameState;
 byte blinkState;
 byte leafState;
 
-uint8_t rearFace;
-uint8_t headFace;
-uint8_t headFaceLeft;
-uint8_t headFaceRight;
+byte rearFace;
+byte headFace;
+byte headFaceLeft;
+byte headFaceRight;
+
+byte pulseDimness;
 
 bool isTrunkSplit;
 bool sendingGrowth;
@@ -95,6 +97,8 @@ Timer soilTimer;
 #define COLOR_TRUNK makeColorRGB(255, 192, 0)    // basically orange
 
 #define FACE_SPROUT 0
+
+#define PULSE_LENGTH 2000
 
 // --- initialize ---
 
@@ -120,6 +124,8 @@ void setup() {
 // --- game loop ---
 
 void loop() {
+  updatePulseDimness();
+
   // game instructions will state to the player to start with all blinks together
   // then the player will double click a blink to start the game
   // the player will need to separate all blinks for the game to begin
@@ -152,7 +158,8 @@ void loop() {
       } else if (faceValue == PLEASE_DETACH && faceValueExpired) {
         // no longer actively receiving detach message - note and indicate
         gotSetupMsg = true;
-        setColorOnFace(dim(YELLOW, 40), f);
+        // setColorOnFace(dim(YELLOW, 40), f);
+        pulseColorOnFace(GREEN, f);
       }
     }
 
@@ -197,7 +204,7 @@ void loop() {
 void updateColor() {
   switch (blinkState) {
     case NONE:
-      setColor(COLOR_NONE);
+      pulseColor(WHITE);
       break;
     case SOIL:
       setColor(COLOR_SOIL);
@@ -223,11 +230,11 @@ void updateColor() {
 
 void handleGrowthColor() {
   if (sendingGrowth) {
-    setColorOnFace(COLOR_GROWTH, headFace);
+    pulseColorOnFace(COLOR_GROWTH, headFace);
   }
 
   if (receivingGrowth) {
-    setColorOnFace(COLOR_GROWTH, rearFace);
+    pulseColorOnFace(COLOR_GROWTH, rearFace);
   }
 }
 
@@ -290,7 +297,7 @@ void playingSoil() {
 
 void playingSprout() {
   headFace = FACE_SPROUT;
-  setValueSentOnFace(TRUNK_1, FACE_SPROUT);
+  setValueSentOnFace(TRUNK_1, headFace);
 
   if (buttonSingleClicked()) {
     sendingGrowth = true;
@@ -307,6 +314,23 @@ void playingSprout() {
 }
 
 void playingTrunk() {
+  byte rxRear = getLastValueReceivedOnFace(rearFace);
+  byte rxHead = getLastValueReceivedOnFace(headFace);
+
+  if (rxRear == GROW) {
+    sendingGrowth = true;
+    setValueSentOnFace(GROW_ACK, rearFace);
+    if (isTrunkSplit) {
+      setValueSentOnFace(GROW, headFaceLeft);
+      setValueSentOnFace(GROW, headFaceRight);
+    } else {
+      setValueSentOnFace(GROW, headFace);
+    }
+  }
+
+  if (rxHead == GROW_ACK) {
+    sendingGrowth = false;
+  }
 }
 
 void playingBranch() {
@@ -323,4 +347,23 @@ void detectPanic() {
 
 void sendGrowth() {
   setValueSentOnFace(GROW, headFace);
+}
+
+void updatePulseDimness() {
+  // get progress from 0 - MAX
+  int pulseProgress = millis() % PULSE_LENGTH;
+
+  // transform that progress to a byte (0-255)
+  byte pulseMapped = map(pulseProgress, 0, PULSE_LENGTH, 0, 255);
+
+  // transform that byte with sin
+  pulseDimness = sin8_C(pulseMapped);
+}
+
+void pulseColor(Color color) {
+  setColor(dim(color, pulseDimness));
+}
+
+void pulseColorOnFace(Color color, byte face) {
+  setColorOnFace(dim(color, pulseDimness), face);
 }
