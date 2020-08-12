@@ -182,7 +182,6 @@ void loop() {
       } else if (faceValue == PLEASE_DETACH && faceValueExpired) {
         // no longer actively receiving detach message - note and indicate
         gotSetupMsg = true;
-        // setColorOnFace(dim(YELLOW, 40), f);
         pulseColorOnFace(GREEN, f);
       }
     }
