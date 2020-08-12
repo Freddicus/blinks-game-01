@@ -38,6 +38,14 @@ enum LeafState {
   DEAD
 };
 
+enum BranchBudState {
+  NAB,  // Not A Branch/Bud
+  INIT,
+  RANDOMIZING,
+  BUDDING,
+
+};
+
 // --- simple messages ---
 
 enum Message : byte {
@@ -69,6 +77,7 @@ const static byte oppositeFaces[] = {3, 4, 5, 0, 1, 2};
 byte gameState;
 byte blinkState;
 byte leafState;
+byte branchState;
 
 byte rearFace;
 byte headFace;
@@ -90,6 +99,10 @@ bool gotSetupMsg;
 Timer soilTimer;
 
 Timer txGrowthTimer;
+
+// branch / bud play
+
+// leaf play
 
 // --- game values ---
 
@@ -113,6 +126,7 @@ void setup() {
   gameState = SETUP;
   blinkState = NONE;
   leafState = NAL;
+  branchState = NAB;
 
   rearFace = -1;
   headFace = -1;
@@ -199,8 +213,10 @@ void loop() {
         playingBranch();
         break;
       case BUD:
+        playingBud();
         break;
       case LEAF:
+        playingLeaf();
         break;
     }
 
@@ -367,20 +383,19 @@ void playingBranch() {
     sendingGrowth = false;
   }
 
+  randomizeBudAffinity();
   // 1. randomize bud affinity
   // 2. communicate
   // 3. indicate
 }
 
-// ----- Helpers ---------
-
-void detectPanic() {
-  if (isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_PANIC_CLICKS) {
-    setup();
-    setValueSentOnAllFaces(QUIET);
-  }
+void playingBud() {
 }
 
+void playingLeaf() {
+}
+
+// ----- Game Helpers ------
 void ackGrowth() {
   setValueSentOnFace(GROW_ACK, rearFace);
 }
@@ -392,6 +407,18 @@ void sendGrowth() {
 void sendSplitGrowth() {
   setValueSentOnFace(GROW, headFaceLeft);
   setValueSentOnFace(GROW, headFaceRight);
+}
+
+void randomizeBudAffinity() {
+}
+
+// ----- Generic Helpers ---------
+
+void detectPanic() {
+  if (isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_PANIC_CLICKS) {
+    setup();
+    setValueSentOnAllFaces(QUIET);
+  }
 }
 
 void updatePulseDimness() {
