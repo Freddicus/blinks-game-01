@@ -3,10 +3,8 @@
         {
             "name": "Mac",
             "includePath": [
-                "~/Documents/Arduino/hardware/Move38-Blinks-Library/avr/**",
-                "${workspaceFolder}",
-                "~/git-projects/Blinks-SDK/cores/blinklib/**",
-                "/Users/alfredsterphone/Documents/Arduino/hardware/Move38-manual/avr/**"
+                "~/Library/Arduino15/packages/move38/hardware/avr/1.0.0/**",
+                "${workspaceFolder}"
             ],
             "defines": [
                 "TEST",

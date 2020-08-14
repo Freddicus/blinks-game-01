@@ -1,6 +1,7 @@
 {
-    "board": "Move38-manual:avr:blink",
+    "board": "move38:avr:blink",
     "sketch": "game-01/game-01.ino",
     "output": "../build",
-    "port": " "
+    "port": " ",
+    "programmer": "USBtinyISP"
 }
