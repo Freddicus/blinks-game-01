@@ -101,6 +101,7 @@ Timer soilTimer;
 Timer txGrowthTimer;
 
 // branch / bud play
+byte budFaces[4];
 
 // leaf play
 
@@ -123,6 +124,8 @@ Timer txGrowthTimer;
 // --- initialize ---
 
 void setup() {
+  randomize();
+
   gameState = SETUP;
   blinkState = NONE;
   leafState = NAL;
@@ -299,10 +302,12 @@ void playingNone() {
       blinkState = BRANCH;
       headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
+      updateBudFaces();
     } else if (faceValue >= BRANCH_RIGHT_1 || faceValue < BRANCH_RIGHT_4) {
       blinkState = BRANCH;
       headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
+      updateBudFaces();
     }
   }
 }
@@ -408,7 +413,17 @@ void sendSplitGrowth() {
   setValueSentOnFace(GROW, headFaceRight);
 }
 
+void updateBudFaces() {
+  budFaces[0] = (headFace + 1) % FACE_COUNT;
+  budFaces[1] = (headFace + 2) % FACE_COUNT;
+  budFaces[2] = (headFace + 4) % FACE_COUNT;
+  budFaces[3] = (headFace + 5) % FACE_COUNT;
+}
+
 void randomizeBudAffinity() {
+  // should i be a bud?
+  // if yes, which face from budFaces
+  // if no, wait for leaf ack
 }
 
 // ----- Generic Helpers ---------
