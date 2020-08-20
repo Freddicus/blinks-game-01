@@ -3,5 +3,5 @@
     "sketch": "game-01/game-01.ino",
     "output": "../build",
     "port": " ",
-    "programmer": "USBtinyISP"
+    "programmer": "USBasp"
 }

@@ -103,6 +103,8 @@ Timer txGrowthTimer;
 // branch / bud play
 byte budFaces[4];
 
+Timer coinFlipTimer;
+
 // leaf play
 
 // --- game values ---
@@ -151,6 +153,10 @@ void setup() {
 // --- game loop ---
 
 void loop() {
+  if (hasWoken()) {
+    setup();
+  }
+
   updatePulseDimness();
 
   // game instructions will state to the player to start with all blinks together
@@ -187,7 +193,7 @@ void loop() {
         gotSetupMsg = true;
         pulseColorOnFace(GREEN, f);
       }
-    }
+    }  // for each face
 
     // if i'm alone, then i'm ready to play
     if (gotSetupMsg && isAlone()) {
@@ -195,7 +201,7 @@ void loop() {
       // don't send anything
       setValueSentOnAllFaces(QUIET);
     }
-  }
+  }  // if SETUP
 
   if (gameState == PLAYING) {
     switch (blinkState) {
@@ -224,8 +230,8 @@ void loop() {
 
     updateColor();
     detectPanic();
-  }
-}
+  }  // if PLAYING
+}  // loop
 
 // --------- color section ------------
 
@@ -326,6 +332,11 @@ void playingSoil() {
 }
 
 void playingSprout() {
+  // allow undo sprout for overzealous players
+  if (buttonDoubleClicked() && isAlone()) {
+    blinkState = NONE;
+  }
+
   headFace = FACE_SPROUT;
   setValueSentOnFace(TRUNK_1, headFace);
 
@@ -421,7 +432,15 @@ void updateBudFaces() {
 }
 
 void randomizeBudAffinity() {
+  bool becomeBud = false;
+  if (coinFlipTimer.isExpired()) {
+    becomeBud = flipCoin();
+  }
+
   // should i be a bud?
+  if (becomeBud) {
+    blinkState = BUD;
+  }
   // if yes, which face from budFaces
   // if no, wait for leaf ack
 }
@@ -433,6 +452,9 @@ void detectPanic() {
     setup();
     setValueSentOnAllFaces(QUIET);
   }
+}
+
+bool flipCoin() {
 }
 
 void updatePulseDimness() {
