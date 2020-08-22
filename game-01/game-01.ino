@@ -294,30 +294,37 @@ void playingNone() {
       rearFace = f;
     }
 
-    headFace = oppositeFaces[f];
-    headFaceLeft = oppositeFaces[f] - 1;
-    headFaceRight = oppositeFaces[f] + 1;
-
     if (faceValue >= TRUNK_1 || faceValue < TRUNK_5) {
       blinkState = TRUNK;
+      headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       break;
     } else if (faceValue == TRUNK_5) {
       blinkState = TRUNK;
       isTrunkSplit = true;
+      headFaceLeft = oppositeFaces[f] - 1;
+      headFaceRight = oppositeFaces[f] + 1;
       setValueSentOnFace(BRANCH_LEFT_1, headFaceLeft);
       setValueSentOnFace(BRANCH_RIGHT_1, headFaceRight);
       break;
     } else if (faceValue >= BRANCH_LEFT_1 || faceValue < BRANCH_LEFT_4) {
       blinkState = BRANCH;
+      headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       updateBudFaces();
     } else if (faceValue >= BRANCH_RIGHT_1 || faceValue < BRANCH_RIGHT_4) {
       blinkState = BRANCH;
+      headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       updateBudFaces();
     } else if (faceValue == BRANCH_RIGHT_4 || faceValue == BRANCH_LEFT_4) {
-      setValueSentOnFace(f, START_BUDDING);
+      blinkState = BRANCH;
+      branchState = RANDOMIZING;
+      headFace = oppositeFaces[f];  // not used
+      setValueSentOnFace(START_BUDDING, rearFace);
+    } else if (faceValue == START_BUDDING) {
+      branchState = RANDOMIZING;
+      setValueSentOnFace(START_BUDDING, rearFace);
     }
   }
 }
@@ -385,32 +392,42 @@ void playingTrunk() {
 }
 
 void playingBranch() {
-  // TODO: listen for START_BUDDING
-  // do the growth stuff
-  byte rxRear = getLastValueReceivedOnFace(rearFace);
-  byte rxHead = getLastValueReceivedOnFace(headFace);
+  switch (branchState) {
+    case NAB:
+      // do the growth stuff
+      byte rxRear = getLastValueReceivedOnFace(rearFace);
+      byte rxHead = getLastValueReceivedOnFace(headFace);
 
-  // TODO: add growthTimer and use growthInitiated
-  if (rxRear == GROW) {
-    setValueSentOnFace(GROW_ACK, rearFace);
+      // TODO: add growthTimer and use growthInitiated
+      if (rxRear == GROW) {
+        setValueSentOnFace(GROW_ACK, rearFace);
+      }
+
+      if (rxRear == GROW && !isFinalBranch) {
+        sendingGrowth = true;
+      }
+
+      if (rxHead == GROW_ACK) {
+        sendingGrowth = false;
+      }
+      break;
+    case RANDOMIZING:
+      if (becomeBudCoinFlipTimer.isExpired()) {
+        becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
+      }
+
+      randomizeBudAffinity();
+      break;
   }
-
-  if (rxRear == GROW && !isFinalBranch) {
-    sendingGrowth = true;
-  }
-
-  if (rxHead == GROW_ACK) {
-    sendingGrowth = false;
-  }
-
-  if (becomeBudCoinFlipTimer.isExpired()) {
-    becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
-  }
-
-  randomizeBudAffinity();
 }
 
 void playingBud() {
+  switch (branchState) {
+    case BUDDING:
+      break;
+    case TOO_LATE:
+      break;
+  }
 }
 
 void playingLeaf() {
