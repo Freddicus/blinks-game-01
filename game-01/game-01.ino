@@ -40,10 +40,9 @@ enum LeafState {
 
 enum BranchBudState {
   NAB,  // Not A Branch/Bud
-  INIT,
   RANDOMIZING,
   BUDDING,
-
+  TOO_LATE
 };
 
 // --- simple messages ---
@@ -65,6 +64,7 @@ enum Message : byte {
   BRANCH_RIGHT_4,
   GROW,
   GROW_ACK,
+  START_BUDDING,
   PLEASE_DETACH
 };
 
@@ -103,7 +103,8 @@ Timer txGrowthTimer;
 // branch / bud play
 byte budFaces[4];
 
-Timer coinFlipTimer;
+Timer becomeBudCoinFlipTimer;
+Timer activeBudSeekingLeaf;
 
 // leaf play
 
@@ -120,8 +121,10 @@ Timer coinFlipTimer;
 
 #define FACE_SPROUT 0
 
-#define PULSE_LENGTH 2000
+#define PULSE_LENGTH_MS 2000
 #define GROWTH_DELAY_MS 1250
+#define BECOME_BUD_COIN_FLIP_COOLDOWN_MS 7500
+#define ASK_FOR_LEAF_MAX_TIME_MS 5000
 
 // --- initialize ---
 
@@ -291,29 +294,30 @@ void playingNone() {
       rearFace = f;
     }
 
+    headFace = oppositeFaces[f];
+    headFaceLeft = oppositeFaces[f] - 1;
+    headFaceRight = oppositeFaces[f] + 1;
+
     if (faceValue >= TRUNK_1 || faceValue < TRUNK_5) {
       blinkState = TRUNK;
-      headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       break;
     } else if (faceValue == TRUNK_5) {
       blinkState = TRUNK;
       isTrunkSplit = true;
-      headFaceLeft = oppositeFaces[f] - 1;
-      headFaceRight = oppositeFaces[f] + 1;
       setValueSentOnFace(BRANCH_LEFT_1, headFaceLeft);
       setValueSentOnFace(BRANCH_RIGHT_1, headFaceRight);
       break;
     } else if (faceValue >= BRANCH_LEFT_1 || faceValue < BRANCH_LEFT_4) {
       blinkState = BRANCH;
-      headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       updateBudFaces();
     } else if (faceValue >= BRANCH_RIGHT_1 || faceValue < BRANCH_RIGHT_4) {
       blinkState = BRANCH;
-      headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       updateBudFaces();
+    } else if (faceValue == BRANCH_RIGHT_4 || faceValue == BRANCH_LEFT_4) {
+      setValueSentOnFace(f, START_BUDDING);
     }
   }
 }
@@ -381,6 +385,7 @@ void playingTrunk() {
 }
 
 void playingBranch() {
+  // TODO: listen for START_BUDDING
   // do the growth stuff
   byte rxRear = getLastValueReceivedOnFace(rearFace);
   byte rxHead = getLastValueReceivedOnFace(headFace);
@@ -398,10 +403,11 @@ void playingBranch() {
     sendingGrowth = false;
   }
 
+  if (becomeBudCoinFlipTimer.isExpired()) {
+    becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
+  }
+
   randomizeBudAffinity();
-  // 1. randomize bud affinity
-  // 2. communicate
-  // 3. indicate
 }
 
 void playingBud() {
@@ -433,16 +439,17 @@ void updateBudFaces() {
 
 void randomizeBudAffinity() {
   bool becomeBud = false;
-  if (coinFlipTimer.isExpired()) {
+  if (becomeBudCoinFlipTimer.isExpired()) {
     becomeBud = flipCoin();
   }
 
   // should i be a bud?
   if (becomeBud) {
     blinkState = BUD;
+    branchState = BUDDING;
+  } else {
+    becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
   }
-  // if yes, which face from budFaces
-  // if no, wait for leaf ack
 }
 
 // ----- Generic Helpers ---------
@@ -455,14 +462,15 @@ void detectPanic() {
 }
 
 bool flipCoin() {
+  return random(1);  // random(1000) % 2 better? need to test...
 }
 
 void updatePulseDimness() {
   // get progress from 0 - MAX
-  int pulseProgress = millis() % PULSE_LENGTH;
+  int pulseProgress = millis() % PULSE_LENGTH_MS;
 
   // transform that progress to a byte (0-255)
-  byte pulseMapped = map(pulseProgress, 0, PULSE_LENGTH, 0, 255);
+  byte pulseMapped = map(pulseProgress, 0, PULSE_LENGTH_MS, 0, 255);
 
   // transform that byte with sin
   pulseDimness = sin8_C(pulseMapped);
