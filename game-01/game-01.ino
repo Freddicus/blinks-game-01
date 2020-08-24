@@ -322,9 +322,6 @@ void playingNone() {
       branchState = RANDOMIZING;
       headFace = oppositeFaces[f];  // not used
       setValueSentOnFace(START_BUDDING, rearFace);
-    } else if (faceValue == START_BUDDING) {
-      branchState = RANDOMIZING;
-      setValueSentOnFace(START_BUDDING, rearFace);
     }
   }
 }
@@ -392,12 +389,12 @@ void playingTrunk() {
 }
 
 void playingBranch() {
+  byte rxRear = getLastValueReceivedOnFace(rearFace);
+  byte rxHead = getLastValueReceivedOnFace(headFace);
+
   switch (branchState) {
     case NAB:
-      // do the growth stuff
-      byte rxRear = getLastValueReceivedOnFace(rearFace);
-      byte rxHead = getLastValueReceivedOnFace(headFace);
-
+      // --- do the growth stuff
       // TODO: add growthTimer and use growthInitiated
       if (rxRear == GROW) {
         setValueSentOnFace(GROW_ACK, rearFace);
@@ -410,12 +407,16 @@ void playingBranch() {
       if (rxHead == GROW_ACK) {
         sendingGrowth = false;
       }
-      break;
-    case RANDOMIZING:
-      if (becomeBudCoinFlipTimer.isExpired()) {
+
+      // --- do the post-growth stuff
+      if (rxHead == START_BUDDING) {
+        branchState = RANDOMIZING;
         becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
+        setValueSentOnFace(START_BUDDING, rearFace);
       }
 
+      break;
+    case RANDOMIZING:
       randomizeBudAffinity();
       break;
   }
@@ -431,6 +432,18 @@ void playingBud() {
 }
 
 void playingLeaf() {
+  switch (leafState) {
+    case NAL:
+      break;
+    case YOUNG:
+      break;
+    case MATURE:
+      break;
+    case DYING:
+      break;
+    case DEAD:
+      break;
+  }
 }
 
 // ----- Game Helpers ------
