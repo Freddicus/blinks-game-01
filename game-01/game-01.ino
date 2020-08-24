@@ -257,8 +257,10 @@ void updateColor() {
     case BRANCH:
       setColor(COLOR_TRUNK);
       handleGrowthColor();
+      handleBranchBudColor();
       break;
     case BUD:
+      handleBranchBudColor();
       break;
     case LEAF:
       break;
@@ -272,6 +274,18 @@ void handleGrowthColor() {
 
   if (receivingGrowth) {
     pulseColorOnFace(COLOR_GROWTH, rearFace);
+  }
+}
+
+void handleBranchBudColor() {
+  switch (branchState) {
+    case RANDOMIZING:
+      sparkle();
+      break;
+    case BUDDING:
+      break;
+    case TOO_LATE:
+      break;
   }
 }
 
@@ -419,10 +433,16 @@ void playingBranch() {
     case RANDOMIZING:
       randomizeBudAffinity();
       break;
+    default:
+      playingBud();
+      break;
   }
 }
 
 void playingBud() {
+  byte rxRear = getLastValueReceivedOnFace(rearFace);
+  byte rxHead = getLastValueReceivedOnFace(headFace);
+
   switch (branchState) {
     case BUDDING:
       break;
@@ -512,4 +532,14 @@ void pulseColor(Color color) {
 
 void pulseColorOnFace(Color color, byte face) {
   setColorOnFace(dim(color, pulseDimness), face);
+}
+
+void sparkle() {
+  FOREACH_FACE(f) {
+    byte randomH = random(millis()) % 255;
+    byte randomS = random(millis()) % 255;
+    byte randomB = random(40);
+    Color randomColor = makeColorHSB(randomH, randomS, randomB);
+    setColorOnFace(randomColor, f);
+  }
 }
