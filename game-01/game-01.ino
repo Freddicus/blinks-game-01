@@ -35,14 +35,15 @@ enum LeafState {
   YOUNG,
   MATURE,
   DYING,
-  DEAD
+  DEAD_LEAF
 };
 
 enum BranchBudState {
   NAB,  // Not A Branch/Bud
   RANDOMIZING,
   BUDDING,
-  TOO_LATE
+  TOO_LATE,
+  DEAD_BRANCH
 };
 
 // --- simple messages ---
@@ -102,9 +103,12 @@ Timer txGrowthTimer;
 
 // branch / bud play
 byte budFaces[4];
+byte activeBudFace;
+byte branchHitPoints;
 
 Timer becomeBudCoinFlipTimer;
-Timer activeBudSeekingLeaf;
+Timer activeBudSeekingLeafTimer;
+Timer tooLateCoolDownTimer;
 
 // leaf play
 
@@ -118,6 +122,8 @@ Timer activeBudSeekingLeaf;
 #define COLOR_SPROUT makeColorRGB(191, 255, 0)   // lime greenish
 #define COLOR_GROWTH makeColorRGB(84, 164, 222)  // water vibes
 #define COLOR_TRUNK makeColorRGB(255, 192, 0)    // basically orange
+#define COLOR_BUD COLOR_SPROUT                   // lime greenish
+#define COLOR_BRANCH COLOR_TRUNK                 // basically orange
 
 #define FACE_SPROUT 0
 
@@ -125,6 +131,10 @@ Timer activeBudSeekingLeaf;
 #define GROWTH_DELAY_MS 1250
 #define BECOME_BUD_COIN_FLIP_COOLDOWN_MS 7500
 #define ASK_FOR_LEAF_MAX_TIME_MS 5000
+#define ASK_FOR_LEAF_MIN_TIME_MS 1250
+#define TOO_LATE_COOL_DOWN_MS 4000
+
+#define INITIAL_BRANCH_HIT_POINTS 4
 
 // --- initialize ---
 
@@ -149,6 +159,9 @@ void setup() {
   receivingGrowth = false;
 
   gotSetupMsg = false;
+
+  activeBudFace = -1;
+  branchHitPoints = INITIAL_BRANCH_HIT_POINTS;
 
   setColor(dim(WHITE, 40));
 }
@@ -279,12 +292,17 @@ void handleGrowthColor() {
 
 void handleBranchBudColor() {
   switch (branchState) {
+    case NAB:
+      setColor(COLOR_BRANCH);
+      break;
     case RANDOMIZING:
       sparkle();
       break;
     case BUDDING:
+      pulseColorOnFace(COLOR_BUD, activeBudFace);
       break;
     case TOO_LATE:
+      pulseColor(RED);
       break;
   }
 }
@@ -445,8 +463,22 @@ void playingBud() {
 
   switch (branchState) {
     case BUDDING:
+      if (activeBudFace == -1) {
+        activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MAX_TIME_MS - ASK_FOR_LEAF_MIN_TIME_MS) + ASK_FOR_LEAF_MIN_TIME_MS);
+        activeBudFace = budFaces[random(4)];
+      } else {
+        if (activeBudSeekingLeafTimer.isExpired()) {
+          activeBudFace = -1;
+          branchState = TOO_LATE;
+          tooLateCoolDownTimer.set(TOO_LATE_COOL_DOWN_MS);
+        }
+      }
       break;
     case TOO_LATE:
+      if (tooLateCoolDownTimer.isExpired()) {
+        branchState = RANDOMIZING;
+        becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
+      }
       break;
   }
 }
@@ -461,7 +493,7 @@ void playingLeaf() {
       break;
     case DYING:
       break;
-    case DEAD:
+    case DEAD_LEAF:
       break;
   }
 }
