@@ -66,6 +66,8 @@ enum Message : byte {
   GROW,
   GROW_ACK,
   START_BUDDING,
+  START_THE_CLOCK,
+  START_THE_CLOCK_NOW,
   PLEASE_DETACH
 };
 
@@ -87,7 +89,11 @@ byte headFaceRight;
 
 byte pulseDimness;
 
+// trunk / branch
 bool isTrunkSplit;
+Timer gameTimer;
+bool isGameTimerStarted;
+
 bool isFinalBranch;
 
 // --- growth ----
@@ -133,6 +139,7 @@ Timer tooLateCoolDownTimer;
 #define ASK_FOR_LEAF_MAX_TIME_MS 5000
 #define ASK_FOR_LEAF_MIN_TIME_MS 1250
 #define TOO_LATE_COOL_DOWN_MS 4000
+#define GAME_TIMER_MS 45000
 
 #define INITIAL_BRANCH_HIT_POINTS 4
 
@@ -152,6 +159,8 @@ void setup() {
   headFaceRight = -1;
 
   isTrunkSplit = false;
+  isGameTimerStarted = false;
+
   isFinalBranch = false;
 
   growthInitiated = false;
@@ -266,6 +275,7 @@ void updateColor() {
     case TRUNK:
       setColor(COLOR_TRUNK);
       handleGrowthColor();
+      handleGameTimerColor();
       break;
     case BRANCH:
       setColor(COLOR_TRUNK);
@@ -288,6 +298,9 @@ void handleGrowthColor() {
   if (receivingGrowth) {
     pulseColorOnFace(COLOR_GROWTH, rearFace);
   }
+}
+
+void handleGameTimerColor() {
 }
 
 void handleBranchBudColor() {
@@ -350,6 +363,7 @@ void playingNone() {
       setValueSentOnFace(faceValue + 1, headFace);
       updateBudFaces();
     } else if (faceValue == BRANCH_RIGHT_4 || faceValue == BRANCH_LEFT_4) {
+      isFinalBranch = true;
       blinkState = BRANCH;
       branchState = RANDOMIZING;
       headFace = oppositeFaces[f];  // not used
@@ -398,6 +412,10 @@ void playingSprout() {
   if (getLastValueReceivedOnFace(headFace) == GROW_ACK) {
     sendingGrowth = false;
   }
+
+  if (getLastValueReceivedOnFace(headFace) == START_THE_CLOCK) {
+    setValueSentOnFace(START_THE_CLOCK_NOW, headFace);
+  }
 }
 
 void playingTrunk() {
@@ -417,6 +435,34 @@ void playingTrunk() {
 
   if (rxHead == GROW_ACK) {
     sendingGrowth = false;
+  }
+
+  if (isTrunkSplit) {
+    byte rxHeadLeft = getLastValueReceivedOnFace(headFaceLeft);
+    byte rxHeadRight = getLastValueReceivedOnFace(headFaceRight);
+
+    // both branches are budding - start the trunk timer!
+    if (rxHeadLeft == rxHeadRight && rxHeadRight == START_BUDDING) {
+      // message down to trunk 1 that it's time
+      setValueSentOnFace(START_THE_CLOCK, rearFace);
+    }
+  }
+
+  if (rxHead == START_THE_CLOCK) {
+    setValueSentOnFace(START_THE_CLOCK, rearFace);
+  }
+
+  if (rxRear == START_THE_CLOCK_NOW) {
+    gameTimer.set(GAME_TIMER_MS);
+    isGameTimerStarted = true;
+  }
+
+  if (isGameTimerStarted && gameTimer.isExpired()) {
+    if (isTrunkSplit) {
+      // TODO: game is over! animate!!!
+    } else {
+      setValueSentOnFace(START_THE_CLOCK_NOW, headFace);
+    }
   }
 }
 
