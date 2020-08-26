@@ -614,10 +614,17 @@ void pulseColorOnFace(Color color, byte face) {
 
 void sparkle() {
   FOREACH_FACE(f) {
-    byte randomH = random(millis()) % 255;
-    byte randomS = random(millis()) % 255;
-    byte randomB = random(40);
-    Color randomColor = makeColorHSB(randomH, randomS, randomB);
+    byte randomH = random(360);
+    byte randomS = random(100);
+    byte randomB = random(40);  // 40% max brightness
+    Color randomColor = makeColorHSBMapped(randomH, randomS, randomB);
     setColorOnFace(randomColor, f);
   }
+}
+
+Color makeColorHSBMapped(word h, word s, word b) {
+  byte mappedH = map(h, 0, 360, 0, 255);
+  byte mappedS = map(s, 0, 100, 0, 255);
+  byte mappedB = map(b, 0, 100, 0, 255);
+  return makeColorHSB(mappedH, mappedS, mappedB);
 }
