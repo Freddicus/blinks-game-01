@@ -143,6 +143,7 @@ Timer tooLateCoolDownTimer;
 #define ASK_FOR_LEAF_MIN_TIME_MS 1250
 #define TOO_LATE_COOL_DOWN_MS 4000
 #define GAME_TIMER_MS 45000
+#define ONE_COLOR_REVOLUTION_MS 375
 
 #define INITIAL_BRANCH_HIT_POINTS 4
 
@@ -289,6 +290,7 @@ void updateColor() {
       handleBranchBudColor();
       break;
     case LEAF:
+      handleLeafColor();
       break;
   }
 }
@@ -304,6 +306,9 @@ void handleGrowthColor() {
 }
 
 void handleGameTimerColor() {
+  if (isGameTimerStarted && !gameTimer.isExpired()) {
+    spinColor(COLOR_TRUNK /*, speed*/);
+  }
 }
 
 void handleBranchBudColor() {
@@ -319,6 +324,26 @@ void handleBranchBudColor() {
       break;
     case TOO_LATE:
       pulseColor(RED);
+      break;
+  }
+}
+
+void handleLeafColor() {
+  switch (leafState) {
+    case NAL:
+      // TODO: perhaps detached leaves have a color
+      break;
+    case YOUNG:
+      // TODO: fast spinning
+      break;
+    case MATURE:
+      // TODO: calm spinning
+      break;
+    case DYING:
+      // TODO: sad spinning
+      break;
+    case DEAD_LEAF:
+      // TODO: spinning stopped
       break;
   }
 }
@@ -610,6 +635,22 @@ bool flipCoin() {
   return random(1);  // random(1000) % 2 better? need to test...
 }
 
+byte nextFace(byte face) {
+  return nextFace(face, 1);
+}
+
+byte nextFace(byte face, byte amount) {
+  return (face + amount) % FACE_COUNT;
+}
+
+byte prevFace(byte face) {
+  return prevFace(face, 1);
+}
+
+byte prevFace(byte face, byte amount) {
+  return (face + (FACE_COUNT - (amount % FACE_COUNT))) % FACE_COUNT;
+}
+
 void updatePulseDimness() {
   // get progress from 0 - MAX
   int pulseProgress = millis() % PULSE_LENGTH_MS;
@@ -644,4 +685,15 @@ Color makeColorHSBMapped(word h, word s, word b) {
   byte mappedS = map(s, 0, 100, 0, 255);
   byte mappedB = map(b, 0, 100, 0, 255);
   return makeColorHSB(mappedH, mappedS, mappedB);
+}
+
+void spinColor(Color color) {
+  int spinProgress = millis() % ONE_COLOR_REVOLUTION_MS;
+  byte spinMapped = map(spinProgress, 0, ONE_COLOR_REVOLUTION_MS, 0, 6);
+  setColorOnFace(color, spinMapped);
+  setColorOnFace(dim(color, 200), prevFace(spinMapped));
+  setColorOnFace(dim(color, 160), prevFace(spinMapped, 2));
+  setColorOnFace(dim(color, 120), prevFace(spinMapped, 3));
+  setColorOnFace(dim(color, 80), prevFace(spinMapped, 4));
+  setColorOnFace(dim(color, 40), prevFace(spinMapped, 5));
 }
