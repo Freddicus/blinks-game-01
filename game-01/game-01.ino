@@ -143,7 +143,10 @@ Timer tooLateCoolDownTimer;
 #define ASK_FOR_LEAF_MIN_TIME_MS 1250
 #define TOO_LATE_COOL_DOWN_MS 4000
 #define GAME_TIMER_MS 45000
-#define ONE_COLOR_REVOLUTION_MS 375
+#define FAST_SPIN_SPEED_MS 250
+#define MEDIUM_SPIN_SPEED_MS 500  // tick-tock
+#define SLOW_SPIN_SPEED_MS 1000
+#define CRAWLING_SPIN_SPEED_MS 1500
 
 #define INITIAL_BRANCH_HIT_POINTS 4
 
@@ -307,7 +310,7 @@ void handleGrowthColor() {
 
 void handleGameTimerColor() {
   if (isGameTimerStarted && !gameTimer.isExpired()) {
-    spinColor(COLOR_TRUNK /*, speed*/);
+    spinColor(COLOR_TRUNK, MEDIUM_SPIN_SPEED_MS);
   }
 }
 
@@ -687,9 +690,9 @@ Color makeColorHSBMapped(word h, word s, word b) {
   return makeColorHSB(mappedH, mappedS, mappedB);
 }
 
-void spinColor(Color color) {
-  int spinProgress = millis() % ONE_COLOR_REVOLUTION_MS;
-  byte spinMapped = map(spinProgress, 0, ONE_COLOR_REVOLUTION_MS, 0, 6);
+void spinColor(Color color, long revolutionMs) {
+  int spinProgress = millis() % revolutionMs;
+  byte spinMapped = map(spinProgress, 0, revolutionMs, 0, 6);
   setColorOnFace(color, spinMapped);
   setColorOnFace(dim(color, 200), prevFace(spinMapped));
   setColorOnFace(dim(color, 160), prevFace(spinMapped, 2));
