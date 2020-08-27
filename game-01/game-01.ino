@@ -42,6 +42,7 @@ enum BranchBudState {
   NAB,  // Not A Branch/Bud
   RANDOMIZING,
   BUDDING,
+  GREW_A_LEAF,
   TOO_LATE,
   DEAD_BRANCH
 };
@@ -66,6 +67,8 @@ enum Message : byte {
   GROW,
   GROW_ACK,
   START_BUDDING,
+  LOOKING_FOR_LEAF,
+  LOOKING_FOR_LEAF_ACK,
   START_THE_CLOCK,
   START_THE_CLOCK_NOW,
   PLEASE_DETACH
@@ -368,6 +371,11 @@ void playingNone() {
       branchState = RANDOMIZING;
       headFace = oppositeFaces[f];  // not used
       setValueSentOnFace(START_BUDDING, rearFace);
+    } else if (faceValue == LOOKING_FOR_LEAF) {
+      blinkState = LEAF;
+      leafState = YOUNG;
+      headFace = oppositeFaces[f];                         // not used
+      setValueSentOnFace(LOOKING_FOR_LEAF_ACK, rearFace);  // rearFace is the leaf stem
     }
   }
 }
@@ -512,11 +520,17 @@ void playingBud() {
       if (activeBudFace == -1) {
         activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MAX_TIME_MS - ASK_FOR_LEAF_MIN_TIME_MS) + ASK_FOR_LEAF_MIN_TIME_MS);
         activeBudFace = budFaces[random(4)];
+        setValueSentOnFace(LOOKING_FOR_LEAF, activeBudFace);
       } else {
         if (activeBudSeekingLeafTimer.isExpired()) {
+          setValueSentOnFace(QUIET, activeBudFace);
           activeBudFace = -1;
           branchState = TOO_LATE;
           tooLateCoolDownTimer.set(TOO_LATE_COOL_DOWN_MS);
+        } else {
+          if (getLastValueReceivedOnFace(activeBudFace) == LOOKING_FOR_LEAF_ACK) {
+            branchState = GREW_A_LEAF;
+          }
         }
       }
       break;
@@ -525,6 +539,9 @@ void playingBud() {
         branchState = RANDOMIZING;
         becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
       }
+      break;
+    case GREW_A_LEAF:
+      // TODO: meat and potatos regarding leaf maturity and damaging branch
       break;
   }
 }
