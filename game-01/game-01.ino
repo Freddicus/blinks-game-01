@@ -126,13 +126,17 @@ Timer tooLateCoolDownTimer;
 #define NUM_BLINKS 18
 #define NUM_PANIC_CLICKS 6
 
-#define COLOR_NONE makeColorRGB(1, 1, 1)         // almost off
-#define COLOR_SOIL makeColorRGB(170, 145, 134)   // i know there is no brown, but...
-#define COLOR_SPROUT makeColorRGB(191, 255, 0)   // lime greenish
-#define COLOR_GROWTH makeColorRGB(84, 164, 222)  // water vibes
-#define COLOR_TRUNK makeColorRGB(255, 192, 0)    // basically orange
-#define COLOR_BUD COLOR_SPROUT                   // lime greenish
-#define COLOR_BRANCH COLOR_TRUNK                 // basically orange
+#define COLOR_NONE makeColorRGB(1, 1, 1)                   // almost off
+#define COLOR_SOIL makeColorRGB(170, 145, 134)             // i know there is no brown, but...
+#define COLOR_SPROUT makeColorRGB(191, 255, 0)             // lime greenish
+#define COLOR_GROWTH makeColorRGB(84, 164, 222)            // water vibes
+#define COLOR_TRUNK makeColorRGB(255, 192, 0)              // basically orange
+#define COLOR_BUD COLOR_SPROUT                             // lime greenish
+#define COLOR_BRANCH COLOR_TRUNK                           // basically orange
+#define COLOR_YOUNG_LEAF makeColorHSBMapped(121, 60, 70)   // light green
+#define COLOR_MATURE_LEAF makeColorHSBMapped(121, 70, 50)  // deep green
+#define COLOR_DYING_LEAF makeColorHSBMapped(60, 60, 90)    // pale yellow
+#define COLOR_DEAD_LEAF makeColorHSBMapped(30, 60, 60)     // "brown"
 
 #define FACE_SPROUT 0
 
@@ -143,10 +147,9 @@ Timer tooLateCoolDownTimer;
 #define ASK_FOR_LEAF_MIN_TIME_MS 1250
 #define TOO_LATE_COOL_DOWN_MS 4000
 #define GAME_TIMER_MS 45000
-#define FAST_SPIN_SPEED_MS 250
-#define MEDIUM_SPIN_SPEED_MS 500  // tick-tock
-#define SLOW_SPIN_SPEED_MS 1000
-#define CRAWLING_SPIN_SPEED_MS 1500
+#define SPIN_SPEED_FAST_MS 250
+#define SPIN_SPEED_MEDIUM_MS 500  // tick-tock
+#define SPIN_SPEED_SLOW_MS 1000
 
 #define INITIAL_BRANCH_HIT_POINTS 4
 
@@ -179,7 +182,7 @@ void setup() {
   activeBudFace = -1;
   branchHitPoints = INITIAL_BRANCH_HIT_POINTS;
 
-  setColor(dim(WHITE, 40));
+  setColor(MAKECOLOR_5BIT_RGB(1, 1, 1));
 }
 
 // --- game loop ---
@@ -310,7 +313,7 @@ void handleGrowthColor() {
 
 void handleGameTimerColor() {
   if (isGameTimerStarted && !gameTimer.isExpired()) {
-    spinColor(COLOR_TRUNK, MEDIUM_SPIN_SPEED_MS);
+    spinColor(COLOR_TRUNK, SPIN_SPEED_MEDIUM_MS);
   }
 }
 
@@ -338,12 +341,15 @@ void handleLeafColor() {
       break;
     case YOUNG:
       // TODO: fast spinning
+      spinColor(COLOR_YOUNG_LEAF, SPIN_SPEED_FAST_MS);
       break;
     case MATURE:
       // TODO: calm spinning
+      spinColor(COLOR_MATURE_LEAF, SPIN_SPEED_MEDIUM_MS);
       break;
     case DYING:
       // TODO: sad spinning
+      spinColor(COLOR_DYING_LEAF, SPIN_SPEED_SLOW_MS);
       break;
     case DEAD_LEAF:
       // TODO: spinning stopped
