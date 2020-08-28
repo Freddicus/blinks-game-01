@@ -121,6 +121,8 @@ Timer tooLateCoolDownTimer;
 
 // leaf play
 
+Timer leafLifeTimer;
+
 // --- game values ---
 
 #define NUM_BLINKS 18
@@ -340,15 +342,12 @@ void handleLeafColor() {
       // TODO: perhaps detached leaves have a color
       break;
     case YOUNG:
-      // TODO: fast spinning
       spinColor(COLOR_YOUNG_LEAF, SPIN_SPEED_FAST_MS);
       break;
     case MATURE:
-      // TODO: calm spinning
       spinColor(COLOR_MATURE_LEAF, SPIN_SPEED_MEDIUM_MS);
       break;
     case DYING:
-      // TODO: sad spinning
       spinColor(COLOR_DYING_LEAF, SPIN_SPEED_SLOW_MS);
       break;
     case DEAD_LEAF:
