@@ -35,7 +35,8 @@ enum LeafState {
   YOUNG,
   MATURE,
   DYING,
-  DEAD_LEAF
+  DEAD_LEAF,
+  DETACHED
 };
 
 enum BranchBudState {
@@ -92,7 +93,8 @@ byte headFaceRight;
 
 byte pulseDimness;
 
-// trunk / branch
+// ---- trunk / branch ----
+
 bool isTrunkSplit;
 Timer gameTimer;
 bool isGameTimerStarted;
@@ -100,6 +102,7 @@ bool isGameTimerStarted;
 bool isFinalBranch;
 
 // --- growth ----
+
 bool growthInitiated;
 bool sendingGrowth;
 bool receivingGrowth;
@@ -110,7 +113,8 @@ Timer soilTimer;
 
 Timer txGrowthTimer;
 
-// branch / bud play
+// ---- branch / bud play ----
+
 byte budFaces[4];
 byte activeBudFace;
 byte branchHitPoints;
@@ -128,7 +132,7 @@ Timer leafLifeTimer;
 #define NUM_BLINKS 18
 #define NUM_PANIC_CLICKS 6
 
-#define COLOR_NONE makeColorRGB(1, 1, 1)                   // almost off
+#define COLOR_NONE MAKECOLOR_5BIT_RGB(1, 1, 1)             // almost off
 #define COLOR_SOIL makeColorRGB(170, 145, 134)             // i know there is no brown, but...
 #define COLOR_SPROUT makeColorRGB(191, 255, 0)             // lime greenish
 #define COLOR_GROWTH makeColorRGB(84, 164, 222)            // water vibes
@@ -184,7 +188,7 @@ void setup() {
   activeBudFace = -1;
   branchHitPoints = INITIAL_BRANCH_HIT_POINTS;
 
-  setColor(MAKECOLOR_5BIT_RGB(1, 1, 1));
+  setColor(COLOR_NONE);
 }
 
 // --- game loop ---
@@ -339,7 +343,8 @@ void handleBranchBudColor() {
 void handleLeafColor() {
   switch (leafState) {
     case NAL:
-      // TODO: perhaps detached leaves have a color
+    case DETACHED:
+      setColor(COLOR_NONE);
       break;
     case YOUNG:
       spinColor(COLOR_YOUNG_LEAF, SPIN_SPEED_FAST_MS);
@@ -351,7 +356,7 @@ void handleLeafColor() {
       spinColor(COLOR_DYING_LEAF, SPIN_SPEED_SLOW_MS);
       break;
     case DEAD_LEAF:
-      // TODO: spinning stopped
+      setColor(COLOR_DEAD_LEAF);
       break;
   }
 }
@@ -465,6 +470,7 @@ void playingTrunk() {
 
   // TODO: add growthTimer and use growthInitiated
   if (rxRear == GROW) {
+    receivingGrowth = true;
     sendingGrowth = true;
     ackGrowth();
     if (isTrunkSplit) {
@@ -475,6 +481,7 @@ void playingTrunk() {
   }
 
   if (rxHead == GROW_ACK) {
+    receivingGrowth = false;
     sendingGrowth = false;
   }
 
@@ -595,10 +602,13 @@ void playingLeaf() {
 }
 
 // ----- Game Helpers ------
+
+// set GROW_ACK on rearFace
 void ackGrowth() {
   setValueSentOnFace(GROW_ACK, rearFace);
 }
 
+// set GROW on headFace
 void sendGrowth() {
   setValueSentOnFace(GROW, headFace);
 }
