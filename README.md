@@ -51,7 +51,7 @@ Once the branches have finished growing, they send a signal down the trunk to th
 
 ## About Me
 
-Hello! I'm a professional software engineer and an amateur game designer. What could go wrong? 😂 I live in Northern NJ with my wife and two children. I have _Freddicus Game Studios, LLC_ registered in NJ, and I would consider releasing the game under that LLC if given the opportunity.
+Hello! I'm a professional software engineer and an amateur game designer. I even registered _Freddicus Game Studios, LLC_ in my state with lofty hopes. What could go wrong? 😂 I live in Northern NJ with my wife and two children. I would love to be considered by Move38 for an official release.
 
 ## Further Discussion
 
