@@ -3,6 +3,8 @@
 
 #include <blinklib.h>
 
+#include "states.h"
+
 bool flipCoin();
 byte nextFace(byte face);
 byte nextFace(byte face, byte amount);

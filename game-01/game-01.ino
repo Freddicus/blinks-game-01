@@ -9,70 +9,8 @@
  */
 
 #include "colors.h"
-
-enum GameState {
-  SETUP,
-  PLAYING
-};
-
-enum BlinkState {
-  NONE,
-  SOIL,
-  SPROUT,
-  TRUNK,
-  BRANCH,
-  BUD,
-  LEAF
-};
-
-enum LeafState {
-  NAL,  // Not A Leaf
-  YOUNG,
-  MATURE,
-  DYING,
-  DEAD_LEAF,
-  DETACHED
-};
-
-enum BranchBudState {
-  NAB,  // Not A Branch/Bud
-  RANDOMIZING,
-  BUDDING,
-  GREW_A_LEAF,
-  TOO_LATE,
-  DEAD_BRANCH
-};
-
-// --- simple messages ---
-
-enum Message : byte {
-  QUIET,
-  TRUNK_1,
-  TRUNK_2,
-  TRUNK_3,
-  TRUNK_4,
-  TRUNK_5,
-  BRANCH_LEFT_1,
-  BRANCH_LEFT_2,
-  BRANCH_LEFT_3,
-  BRANCH_LEFT_4,
-  BRANCH_RIGHT_1,
-  BRANCH_RIGHT_2,
-  BRANCH_RIGHT_3,
-  BRANCH_RIGHT_4,
-  GROW,
-  GROW_ACK,
-  START_BUDDING,
-  LOOKING_FOR_LEAF,
-  LOOKING_FOR_LEAF_ACK,
-  START_THE_CLOCK,
-  START_THE_CLOCK_NOW,
-  PLEASE_DETACH
-};
-
-// -------- global constants --------
-
-const static byte oppositeFaces[] = {3, 4, 5, 0, 1, 2};
+#include "globals.h"
+#include "states.h"
 
 // -------- global variables --------
 
@@ -121,26 +59,6 @@ Timer tooLateCoolDownTimer;
 // leaf play
 
 Timer leafLifeTimer;
-
-// --- game values ---
-
-#define NUM_BLINKS 18
-#define NUM_PANIC_CLICKS 6
-
-#define FACE_SPROUT 0
-
-#define PULSE_LENGTH_MS 2000
-#define GROWTH_DELAY_MS 1250
-#define BECOME_BUD_COIN_FLIP_COOLDOWN_MS 7500
-#define ASK_FOR_LEAF_MAX_TIME_MS 5000
-#define ASK_FOR_LEAF_MIN_TIME_MS 1250
-#define TOO_LATE_COOL_DOWN_MS 4000
-#define GAME_TIMER_MS 45000
-#define SPIN_SPEED_FAST_MS 250
-#define SPIN_SPEED_MEDIUM_MS 500  // tick-tock
-#define SPIN_SPEED_SLOW_MS 1000
-
-#define INITIAL_BRANCH_HIT_POINTS 4
 
 // --- initialize ---
 
@@ -252,97 +170,10 @@ void loop() {
         break;
     }
 
-    updateColor();
+    updateColors();
     detectPanic();
   }  // if PLAYING
 }  // loop
-
-// --------- color section ------------
-
-void updateColor() {
-  switch (blinkState) {
-    case NONE:
-      pulseColor(WHITE, sharedPulseDimness);
-      break;
-    case SOIL:
-      setColor(COLOR_SOIL);
-      break;
-    case SPROUT:
-      setColorOnFace(COLOR_SPROUT, FACE_SPROUT);
-      handleGrowthColor();
-      break;
-    case TRUNK:
-      setColor(COLOR_TRUNK);
-      handleGrowthColor();
-      handleGameTimerColor();
-      break;
-    case BRANCH:
-      setColor(COLOR_TRUNK);
-      handleGrowthColor();
-      handleBranchBudColor();
-      break;
-    case BUD:
-      handleBranchBudColor();
-      break;
-    case LEAF:
-      handleLeafColor();
-      break;
-  }
-}
-
-void handleGrowthColor() {
-  if (sendingGrowth || (growthInitiated == true && !txGrowthTimer.isExpired())) {
-    pulseColorOnFace(COLOR_GROWTH, headFace, sharedPulseDimness);
-  }
-
-  if (receivingGrowth) {
-    pulseColorOnFace(COLOR_GROWTH, rearFace, sharedPulseDimness);
-  }
-}
-
-void handleGameTimerColor() {
-  if (isGameTimerStarted && !gameTimer.isExpired()) {
-    spinColor(COLOR_TRUNK, SPIN_SPEED_MEDIUM_MS);
-  }
-}
-
-void handleBranchBudColor() {
-  switch (branchState) {
-    case NAB:
-      setColor(COLOR_BRANCH);
-      break;
-    case RANDOMIZING:
-      sparkle();
-      break;
-    case BUDDING:
-      pulseColorOnFace(COLOR_BUD, activeBudFace, sharedPulseDimness);
-      break;
-    case TOO_LATE:
-      pulseColor(RED, sharedPulseDimness);
-      break;
-  }
-}
-
-void handleLeafColor() {
-  switch (leafState) {
-    case NAL:
-    case DETACHED:
-      setColor(COLOR_NONE);
-      break;
-    case YOUNG:
-      spinColor(COLOR_YOUNG_LEAF, SPIN_SPEED_FAST_MS);
-      break;
-    case MATURE:
-      spinColor(COLOR_MATURE_LEAF, SPIN_SPEED_MEDIUM_MS);
-      break;
-    case DYING:
-      spinColor(COLOR_DYING_LEAF, SPIN_SPEED_SLOW_MS);
-      break;
-    case DEAD_LEAF:
-      setColor(COLOR_DEAD_LEAF);
-      break;
-  }
-}
 
 // -------- Playing methods -------
 

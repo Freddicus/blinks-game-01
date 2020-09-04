@@ -3,6 +3,8 @@
 
 #include <blinklib.h>
 
+#include "globals.h"
+#include "states.h"
 #include "util.h"
 
 #define COLOR_NONE MAKECOLOR_5BIT_RGB(1, 1, 1)             // almost off
@@ -16,6 +18,12 @@
 #define COLOR_MATURE_LEAF makeColorHSBMapped(121, 70, 50)  // deep green
 #define COLOR_DYING_LEAF makeColorHSBMapped(60, 60, 90)    // pale yellow
 #define COLOR_DEAD_LEAF makeColorHSBMapped(30, 60, 60)     // "brown"
+
+void updateColors();
+void handleGrowthColor();
+void handleGameTimerColor();
+void handleBranchBudColor();
+void handleLeafColor();
 
 void pulseColor(Color color, byte pulseDimness);
 void pulseColorOnFace(Color color, byte face, byte pulseDimness);
