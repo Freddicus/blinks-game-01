@@ -41,13 +41,8 @@ extern byte headFaceRight;
 
 extern byte sharedPulseDimness;
 
-// ---- trunk / branch ----
-
-extern bool isTrunkSplit;
 extern Timer gameTimer;
 extern bool isGameTimerStarted;
-
-extern bool isFinalBranch;
 
 // --- growth ----
 

@@ -1,5 +1,12 @@
 #include "playing.h"
 
+bool isTrunkSplit;
+bool isFinalBranch;
+
+void initPlayVariables() {
+  isTrunkSplit = false;
+}
+
 void gameStatePlaying() {
   switch (blinkState) {
     case NONE:

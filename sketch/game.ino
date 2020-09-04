@@ -30,13 +30,8 @@ byte headFaceRight;
 
 byte sharedPulseDimness;
 
-// ---- trunk / branch ----
-
-bool isTrunkSplit;
 Timer gameTimer;
 bool isGameTimerStarted;
-
-bool isFinalBranch;
 
 // --- growth ----
 
@@ -69,6 +64,8 @@ Timer leafLifeTimer;
 void setup() {
   randomize();
 
+  initPlayVariables();
+
   gameState = SETUP;
   blinkState = NONE;
   leafState = NAL;
@@ -79,7 +76,7 @@ void setup() {
   headFaceLeft = -1;
   headFaceRight = -1;
 
-  isTrunkSplit = false;
+  // isTrunkSplit = false;
   isGameTimerStarted = false;
 
   isFinalBranch = false;

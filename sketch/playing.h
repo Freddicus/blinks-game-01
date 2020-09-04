@@ -6,6 +6,12 @@
 #include "states.h"
 #include "util.h"
 
+// ---- trunk / branch ----
+
+extern bool isTrunkSplit;
+extern bool isFinalBranch;
+
+void initPlayVariables();
 void gameStatePlaying();
 
 // -------- Playing methods -------
