@@ -75,4 +75,6 @@ extern Timer tooLateCoolDownTimer;
 
 extern Timer leafLifeTimer;
 
+extern void setup();
+
 #endif

@@ -3,6 +3,7 @@
 
 #include <blinklib.h>
 
+#include "globals.h"
 #include "states.h"
 
 bool flipCoin();
@@ -10,5 +11,8 @@ byte nextFace(byte face);
 byte nextFace(byte face, byte amount);
 byte prevFace(byte face);
 byte prevFace(byte face, byte amount);
+void updateSharedPulseDimness();
+
+void detectPanic();
 
 #endif
