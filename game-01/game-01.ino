@@ -8,12 +8,7 @@
  * Discussion: https://forum.move38.com/t/new-game-wip-make-like-a-tree-and-leaf/549
  */
 
-// might be overkill -  moving to regular globals for now
-//// ---- flash mem data ----
-//// #include <avr/pgmspace.h>
-//// const static byte oppositeFaces[] PROGMEM = {3, 4, 5, 0, 1, 2};
-
-// ---- enums ----
+#include "colors.h"
 
 enum GameState {
   SETUP,
@@ -91,7 +86,7 @@ byte headFace;
 byte headFaceLeft;
 byte headFaceRight;
 
-byte pulseDimness;
+byte sharedPulseDimness;
 
 // ---- trunk / branch ----
 
@@ -131,18 +126,6 @@ Timer leafLifeTimer;
 
 #define NUM_BLINKS 18
 #define NUM_PANIC_CLICKS 6
-
-#define COLOR_NONE MAKECOLOR_5BIT_RGB(1, 1, 1)             // almost off
-#define COLOR_SOIL makeColorRGB(170, 145, 134)             // i know there is no brown, but...
-#define COLOR_SPROUT makeColorRGB(191, 255, 0)             // lime greenish
-#define COLOR_GROWTH makeColorRGB(84, 164, 222)            // water vibes
-#define COLOR_TRUNK makeColorRGB(255, 192, 0)              // basically orange
-#define COLOR_BUD COLOR_SPROUT                             // lime greenish
-#define COLOR_BRANCH COLOR_TRUNK                           // basically orange
-#define COLOR_YOUNG_LEAF makeColorHSBMapped(121, 60, 70)   // light green
-#define COLOR_MATURE_LEAF makeColorHSBMapped(121, 70, 50)  // deep green
-#define COLOR_DYING_LEAF makeColorHSBMapped(60, 60, 90)    // pale yellow
-#define COLOR_DEAD_LEAF makeColorHSBMapped(30, 60, 60)     // "brown"
 
 #define FACE_SPROUT 0
 
@@ -198,7 +181,7 @@ void loop() {
     setup();
   }
 
-  updatePulseDimness();
+  updateSharedPulseDimness();
 
   // game instructions will state to the player to start with all blinks together
   // then the player will double click a blink to start the game
@@ -232,7 +215,7 @@ void loop() {
       } else if (faceValue == PLEASE_DETACH && faceValueExpired) {
         // no longer actively receiving detach message - note and indicate
         gotSetupMsg = true;
-        pulseColorOnFace(GREEN, f);
+        pulseColorOnFace(GREEN, f, sharedPulseDimness);
       }
     }  // for each face
 
@@ -279,7 +262,7 @@ void loop() {
 void updateColor() {
   switch (blinkState) {
     case NONE:
-      pulseColor(WHITE);
+      pulseColor(WHITE, sharedPulseDimness);
       break;
     case SOIL:
       setColor(COLOR_SOIL);
@@ -309,11 +292,11 @@ void updateColor() {
 
 void handleGrowthColor() {
   if (sendingGrowth || (growthInitiated == true && !txGrowthTimer.isExpired())) {
-    pulseColorOnFace(COLOR_GROWTH, headFace);
+    pulseColorOnFace(COLOR_GROWTH, headFace, sharedPulseDimness);
   }
 
   if (receivingGrowth) {
-    pulseColorOnFace(COLOR_GROWTH, rearFace);
+    pulseColorOnFace(COLOR_GROWTH, rearFace, sharedPulseDimness);
   }
 }
 
@@ -332,10 +315,10 @@ void handleBranchBudColor() {
       sparkle();
       break;
     case BUDDING:
-      pulseColorOnFace(COLOR_BUD, activeBudFace);
+      pulseColorOnFace(COLOR_BUD, activeBudFace, sharedPulseDimness);
       break;
     case TOO_LATE:
-      pulseColor(RED);
+      pulseColor(RED, sharedPulseDimness);
       break;
   }
 }
@@ -649,27 +632,7 @@ void detectPanic() {
   }
 }
 
-bool flipCoin() {
-  return random(1);  // random(1000) % 2 better? need to test...
-}
-
-byte nextFace(byte face) {
-  return nextFace(face, 1);
-}
-
-byte nextFace(byte face, byte amount) {
-  return (face + amount) % FACE_COUNT;
-}
-
-byte prevFace(byte face) {
-  return prevFace(face, 1);
-}
-
-byte prevFace(byte face, byte amount) {
-  return (face + (FACE_COUNT - (amount % FACE_COUNT))) % FACE_COUNT;
-}
-
-void updatePulseDimness() {
+void updateSharedPulseDimness() {
   // get progress from 0 - MAX
   int pulseProgress = millis() % PULSE_LENGTH_MS;
 
@@ -677,41 +640,5 @@ void updatePulseDimness() {
   byte pulseMapped = map(pulseProgress, 0, PULSE_LENGTH_MS, 0, 255);
 
   // transform that byte with sin
-  pulseDimness = sin8_C(pulseMapped);
-}
-
-void pulseColor(Color color) {
-  setColor(dim(color, pulseDimness));
-}
-
-void pulseColorOnFace(Color color, byte face) {
-  setColorOnFace(dim(color, pulseDimness), face);
-}
-
-void sparkle() {
-  FOREACH_FACE(f) {
-    byte randomH = random(360);
-    byte randomS = random(100);
-    byte randomB = random(40);  // 40% max brightness
-    Color randomColor = makeColorHSBMapped(randomH, randomS, randomB);
-    setColorOnFace(randomColor, f);
-  }
-}
-
-Color makeColorHSBMapped(word h, word s, word b) {
-  byte mappedH = map(h, 0, 360, 0, 255);
-  byte mappedS = map(s, 0, 100, 0, 255);
-  byte mappedB = map(b, 0, 100, 0, 255);
-  return makeColorHSB(mappedH, mappedS, mappedB);
-}
-
-void spinColor(Color color, long revolutionMs) {
-  int spinProgress = millis() % revolutionMs;
-  byte spinMapped = map(spinProgress, 0, revolutionMs, 0, 6);
-  setColorOnFace(color, spinMapped);
-  setColorOnFace(dim(color, 200), prevFace(spinMapped));
-  setColorOnFace(dim(color, 160), prevFace(spinMapped, 2));
-  setColorOnFace(dim(color, 120), prevFace(spinMapped, 3));
-  setColorOnFace(dim(color, 80), prevFace(spinMapped, 4));
-  setColorOnFace(dim(color, 40), prevFace(spinMapped, 5));
+  sharedPulseDimness = sin8_C(pulseMapped);
 }
