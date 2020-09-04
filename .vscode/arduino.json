@@ -1,7 +1,7 @@
 {
-    "board": "move38:avr:blink",
-    "sketch": "game-01/game-01.ino",
-    "output": "../build",
-    "port": " ",
-    "programmer": "USBasp"
+  "board": "move38:avr:blink",
+  "sketch": "sketch/game.ino",
+  "output": "../build",
+  "port": " ",
+  "programmer": "USBasp"
 }
