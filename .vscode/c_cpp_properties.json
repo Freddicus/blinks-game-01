@@ -4,7 +4,8 @@
             "name": "Mac",
             "includePath": [
                 "~/Library/Arduino15/packages/move38/hardware/avr/1.0.0/**",
-                "${workspaceFolder}"
+                "${workspaceFolder}",
+                "/Users/alfred/Library/Arduino15/packages/move38/hardware/avr/1.0.0/**"
             ],
             "defines": [
                 "TEST",
