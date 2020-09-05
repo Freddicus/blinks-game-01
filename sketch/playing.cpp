@@ -19,14 +19,21 @@ Timer txGrowthTimer;
 byte budFaces[4];
 byte activeBudFace;
 byte branchHitPoints;
+byte branchState;
+
+bool isLeafSignalTimerStarted;
 
 Timer becomeBudCoinFlipTimer;
 Timer activeBudSeekingLeafTimer;
 Timer tooLateCoolDownTimer;
+Timer leafSignalTimer;
 
 // leaf play
 
 Timer leafLifeTimer;
+byte leafState;
+
+bool hasLeafFlashedGreeting;
 
 // ---- setup methods ----
 
@@ -38,31 +45,37 @@ void initPlayVariables() {
   sendingGrowth = false;
   receivingGrowth = false;
 
+  isLeafSignalTimerStarted = false;
+  hasLeafFlashedGreeting = false;
+
+  leafState = NAL;
+  branchState = NAB;
+
   soilTimer.set(0);
   txGrowthTimer.set(0);
 }
 
 void gameStatePlaying() {
   switch (blinkState) {
-    case NONE:
+    case BlinkState::NONE:
       playingNone();
       break;
-    case SOIL:
+    case BlinkState::SOIL:
       playingSoil();
       break;
-    case SPROUT:
+    case BlinkState::SPROUT:
       playingSprout();
       break;
-    case TRUNK:
+    case BlinkState::TRUNK:
       playingTrunk();
       break;
-    case BRANCH:
+    case BlinkState::BRANCH:
       playingBranch();
       break;
-    case BUD:
+    case BlinkState::BUD:
       playingBud();
       break;
-    case LEAF:
+    case BlinkState::LEAF:
       playingLeaf();
       break;
   }
@@ -75,7 +88,7 @@ void gameStatePlaying() {
 
 void playingNone() {
   if (buttonDoubleClicked()) {
-    blinkState = SOIL;
+    blinkState = BlinkState::SOIL;
     soilTimer.set(5000);
   }
 
@@ -91,12 +104,12 @@ void playingNone() {
     }
 
     if (faceValue >= TRUNK_1 || faceValue < TRUNK_5) {
-      blinkState = TRUNK;
+      blinkState = BlinkState::TRUNK;
       headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       break;
     } else if (faceValue == TRUNK_5) {
-      blinkState = TRUNK;
+      blinkState = BlinkState::TRUNK;
       isTrunkSplit = true;
       headFaceLeft = oppositeFaces[f] - 1;
       headFaceRight = oppositeFaces[f] + 1;
@@ -104,23 +117,23 @@ void playingNone() {
       setValueSentOnFace(BRANCH_RIGHT_1, headFaceRight);
       break;
     } else if (faceValue >= BRANCH_LEFT_1 || faceValue < BRANCH_LEFT_4) {
-      blinkState = BRANCH;
+      blinkState = BlinkState::BRANCH;
       headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       updateBudFaces();
     } else if (faceValue >= BRANCH_RIGHT_1 || faceValue < BRANCH_RIGHT_4) {
-      blinkState = BRANCH;
+      blinkState = BlinkState::BRANCH;
       headFace = oppositeFaces[f];
       setValueSentOnFace(faceValue + 1, headFace);
       updateBudFaces();
     } else if (faceValue == BRANCH_RIGHT_4 || faceValue == BRANCH_LEFT_4) {
       isFinalBranch = true;
-      blinkState = BRANCH;
+      blinkState = BlinkState::BRANCH;
       branchState = RANDOMIZING;
       headFace = oppositeFaces[f];  // not used
       setValueSentOnFace(START_BUDDING, rearFace);
     } else if (faceValue == LOOKING_FOR_LEAF) {
-      blinkState = LEAF;
+      blinkState = BlinkState::LEAF;
       leafState = YOUNG;
       headFace = oppositeFaces[f];                         // not used
       setValueSentOnFace(LOOKING_FOR_LEAF_ACK, rearFace);  // rearFace is the leaf stem
@@ -131,11 +144,11 @@ void playingNone() {
 void playingSoil() {
   // allow undo switch to soil
   if (buttonDoubleClicked() && isAlone()) {
-    blinkState = NONE;
+    blinkState = BlinkState::NONE;
   }
 
   if (soilTimer.isExpired()) {
-    blinkState = SPROUT;
+    blinkState = BlinkState::SPROUT;
   } else {
     // TODO: animate soil about to sprout
   }
@@ -144,7 +157,7 @@ void playingSoil() {
 void playingSprout() {
   // allow undo sprout for overzealous players
   if (buttonDoubleClicked() && isAlone()) {
-    blinkState = NONE;
+    blinkState = BlinkState::NONE;
   }
 
   headFace = FACE_SPROUT;
@@ -268,7 +281,7 @@ void playingBud() {
   switch (branchState) {
     case BUDDING:
       if (activeBudFace == -1) {
-        activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MAX_TIME_MS - ASK_FOR_LEAF_MIN_TIME_MS) + ASK_FOR_LEAF_MIN_TIME_MS);
+        activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
         activeBudFace = budFaces[random(4)];
         setValueSentOnFace(LOOKING_FOR_LEAF, activeBudFace);
       } else {
@@ -292,22 +305,48 @@ void playingBud() {
       break;
     case GREW_A_LEAF:
       // TODO: meat and potatos regarding leaf maturity and damaging branch
+      playingBudWithLeaf();
       break;
   }
 }
 
+void playingBudWithLeaf() {
+  if (!isLeafSignalTimerStarted) {
+    // send connected
+    isLeafSignalTimerStarted = true;
+    setValueSentOnFace(BRANCH_GREET_LEAF, activeBudFace);
+    leafSignalTimer.set(random(LEAF_PLAY_TIME_MIN_MS, LEAF_PLAY_TIME_MAX_MS));
+    return;
+  }
+
+  if (leafSignalTimer.isExpired()) {
+    setValueSentOnFace(BRANCH_MATURE_LEAF, activeBudFace);
+    leafSignalTimer.set(random(LEAF_PLAY_TIME_MIN_MS, LEAF_PLAY_TIME_MAX_MS));
+  }
+}
+
 void playingLeaf() {
-  switch (leafState) {
-    case NAL:
-      break;
-    case YOUNG:
-      break;
-    case MATURE:
-      break;
-    case DYING:
-      break;
-    case DEAD_LEAF:
-      break;
+  byte rxRear = getLastValueReceivedOnFace(rearFace);
+
+  if (rxRear == Message::BRANCH_MATURE_LEAF) {
+    setValueSentOnFace(Message::BRANCH_MATURE_LEAF_ACK, rearFace);
+    switch (leafState) {
+      case LeafState::NAL:
+        // should not happen
+        break;
+      case LeafState::YOUNG:
+        leafState = LeafState::MATURE;
+        break;
+      case LeafState::MATURE:
+        leafState = LeafState::DYING;
+        break;
+      case LeafState::DYING:
+        leafState = LeafState::DEAD_LEAF;
+        break;
+      case LeafState::DEAD_LEAF:
+        // TODO poisin the tree
+        break;
+    }
   }
 }
 

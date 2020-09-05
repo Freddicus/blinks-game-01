@@ -49,16 +49,16 @@ void handleGameTimerColor() {
 
 void handleBranchBudColor() {
   switch (branchState) {
-    case NAB:
+    case BranchBudState::NAB:
       setColor(COLOR_BRANCH);
       break;
-    case RANDOMIZING:
+    case BranchBudState::RANDOMIZING:
       sparkle();
       break;
-    case BUDDING:
+    case BranchBudState::BUDDING:
       pulseColorOnFace(COLOR_BUD, activeBudFace, sharedPulseDimness);
       break;
-    case TOO_LATE:
+    case BranchBudState::TOO_LATE:
       pulseColor(RED, sharedPulseDimness);
       break;
   }
@@ -66,22 +66,29 @@ void handleBranchBudColor() {
 
 void handleLeafColor() {
   switch (leafState) {
-    case NAL:
-    case DETACHED:
+    case LeafState::NAL:
+      setColor(RED);
+      break;
+    case LeafState::DETACHED:
       setColor(COLOR_NONE);
       break;
-    case YOUNG:
+    case LeafState::YOUNG:
       spinColor(COLOR_YOUNG_LEAF, SPIN_SPEED_FAST_MS);
       break;
-    case MATURE:
+    case LeafState::MATURE:
       spinColor(COLOR_MATURE_LEAF, SPIN_SPEED_MEDIUM_MS);
       break;
-    case DYING:
+    case LeafState::DYING:
       spinColor(COLOR_DYING_LEAF, SPIN_SPEED_SLOW_MS);
       break;
-    case DEAD_LEAF:
+    case LeafState::DEAD_LEAF:
       setColor(COLOR_DEAD_LEAF);
       break;
+  }
+
+  if (!hasLeafFlashedGreeting && getLastValueReceivedOnFace(rearFace) == BRANCH_GREET_LEAF) {
+    hasLeafFlashedGreeting = true;
+    // TODO flash green for 500 ms
   }
 }
 

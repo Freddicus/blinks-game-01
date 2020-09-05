@@ -4,6 +4,10 @@ bool flipCoin() {
   return random(1);
 }
 
+word random(word min, word max) {
+  return random(max - min) + min;
+}
+
 byte nextFace(byte face) {
   return nextFace(face, 1);
 }

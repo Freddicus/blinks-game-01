@@ -27,6 +27,9 @@ const static byte oppositeFaces[] = {3, 4, 5, 0, 1, 2};
 
 #define INITIAL_BRANCH_HIT_POINTS 4
 
+#define LEAF_PLAY_TIME_MIN_MS 5000
+#define LEAF_PLAY_TIME_MAX_MS 20000
+
 // -------- global variables --------
 
 extern byte gameState;

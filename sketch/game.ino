@@ -20,8 +20,6 @@
 
 byte gameState;
 byte blinkState;
-byte leafState;
-byte branchState;
 
 byte rearFace;
 byte headFace;
@@ -43,8 +41,6 @@ void setup() {
 
   gameState = SETUP;
   blinkState = NONE;
-  leafState = NAL;
-  branchState = NAB;
 
   rearFace = -1;
   headFace = -1;

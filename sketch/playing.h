@@ -25,6 +25,7 @@ extern Timer txGrowthTimer;
 extern byte budFaces[4];
 extern byte activeBudFace;
 extern byte branchHitPoints;
+extern byte branchState;
 
 extern Timer becomeBudCoinFlipTimer;
 extern Timer activeBudSeekingLeafTimer;
@@ -33,6 +34,8 @@ extern Timer tooLateCoolDownTimer;
 // leaf play
 
 extern Timer leafLifeTimer;
+extern byte leafState;
+extern bool hasLeafFlashedGreeting;
 
 // ---- setup methods ----
 
@@ -47,6 +50,7 @@ void playingSprout();
 void playingTrunk();
 void playingBranch();
 void playingBud();
+void playingBudWithLeaf();
 void playingLeaf();
 
 // ----- Game Helpers ------
