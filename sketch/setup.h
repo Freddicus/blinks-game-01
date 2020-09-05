@@ -8,6 +8,7 @@
 #include "states.h"
 #include "util.h"
 
+void initSetupVariables();
 void gameStateSetup();
 
 #endif

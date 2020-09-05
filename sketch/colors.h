@@ -4,6 +4,7 @@
 #include <blinklib.h>
 
 #include "globals.h"
+#include "playing.h"
 #include "states.h"
 #include "util.h"
 

@@ -33,38 +33,13 @@ byte sharedPulseDimness;
 Timer gameTimer;
 bool isGameTimerStarted;
 
-// --- growth ----
-
-bool growthInitiated;
-bool sendingGrowth;
-bool receivingGrowth;
-
-bool gotSetupMsg;
-
-Timer soilTimer;
-
-Timer txGrowthTimer;
-
-// ---- branch / bud play ----
-
-byte budFaces[4];
-byte activeBudFace;
-byte branchHitPoints;
-
-Timer becomeBudCoinFlipTimer;
-Timer activeBudSeekingLeafTimer;
-Timer tooLateCoolDownTimer;
-
-// leaf play
-
-Timer leafLifeTimer;
-
 // --- initialize ---
 
 void setup() {
   randomize();
 
   initPlayVariables();
+  initSetupVariables();
 
   gameState = SETUP;
   blinkState = NONE;
@@ -76,16 +51,7 @@ void setup() {
   headFaceLeft = -1;
   headFaceRight = -1;
 
-  // isTrunkSplit = false;
   isGameTimerStarted = false;
-
-  isFinalBranch = false;
-
-  growthInitiated = false;
-  sendingGrowth = false;
-  receivingGrowth = false;
-
-  gotSetupMsg = false;
 
   activeBudFace = -1;
   branchHitPoints = INITIAL_BRANCH_HIT_POINTS;

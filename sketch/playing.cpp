@@ -1,10 +1,45 @@
 #include "playing.h"
 
+// ---- trunk / branch ----
+
 bool isTrunkSplit;
 bool isFinalBranch;
 
+// --- growth ----
+
+bool growthInitiated;
+bool sendingGrowth;
+bool receivingGrowth;
+
+Timer soilTimer;
+Timer txGrowthTimer;
+
+// ---- branch / bud play ----
+
+byte budFaces[4];
+byte activeBudFace;
+byte branchHitPoints;
+
+Timer becomeBudCoinFlipTimer;
+Timer activeBudSeekingLeafTimer;
+Timer tooLateCoolDownTimer;
+
+// leaf play
+
+Timer leafLifeTimer;
+
+// ---- setup methods ----
+
 void initPlayVariables() {
   isTrunkSplit = false;
+  isFinalBranch = false;
+
+  growthInitiated = false;
+  sendingGrowth = false;
+  receivingGrowth = false;
+
+  soilTimer.set(0);
+  txGrowthTimer.set(0);
 }
 
 void gameStatePlaying() {

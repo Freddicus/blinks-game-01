@@ -44,32 +44,6 @@ extern byte sharedPulseDimness;
 extern Timer gameTimer;
 extern bool isGameTimerStarted;
 
-// --- growth ----
-
-extern bool growthInitiated;
-extern bool sendingGrowth;
-extern bool receivingGrowth;
-
-extern bool gotSetupMsg;
-
-extern Timer soilTimer;
-
-extern Timer txGrowthTimer;
-
-// ---- branch / bud play ----
-
-extern byte budFaces[4];
-extern byte activeBudFace;
-extern byte branchHitPoints;
-
-extern Timer becomeBudCoinFlipTimer;
-extern Timer activeBudSeekingLeafTimer;
-extern Timer tooLateCoolDownTimer;
-
-// leaf play
-
-extern Timer leafLifeTimer;
-
 extern void setup();
 
 #endif

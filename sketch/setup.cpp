@@ -1,5 +1,11 @@
 #include "setup.h"
 
+bool gotSetupMsg;
+
+void initSetupVariables() {
+  gotSetupMsg = false;
+}
+
 void gameStateSetup() {
   // button double clicked - need to tell neighbors to start
   if (buttonDoubleClicked()) {
