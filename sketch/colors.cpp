@@ -117,11 +117,11 @@ void spinColor(Color color, long revolutionMs) {
   int spinProgress = millis() % revolutionMs;
   byte spinMapped = map(spinProgress, 0, revolutionMs, 0, 6);
   setColorOnFace(color, spinMapped);
-  setColorOnFace(dim(color, 200), prevFace(spinMapped));
-  setColorOnFace(dim(color, 160), prevFace(spinMapped, 2));
-  setColorOnFace(dim(color, 120), prevFace(spinMapped, 3));
-  setColorOnFace(dim(color, 80), prevFace(spinMapped, 4));
-  setColorOnFace(dim(color, 40), prevFace(spinMapped, 5));
+  setColorOnFace(dim(color, 200), CCW_FROM_FACE(spinMapped, 1));
+  setColorOnFace(dim(color, 160), CCW_FROM_FACE(spinMapped, 2));
+  setColorOnFace(dim(color, 120), CCW_FROM_FACE(spinMapped, 3));
+  setColorOnFace(dim(color, 80), CCW_FROM_FACE(spinMapped, 4));
+  setColorOnFace(dim(color, 40), CCW_FROM_FACE(spinMapped, 5));
 }
 
 Color makeColorHSBMapped(word h, word s, word b) {

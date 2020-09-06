@@ -8,22 +8,6 @@ word random(word min, word max) {
   return random(max - min) + min;
 }
 
-byte nextFace(byte face) {
-  return nextFace(face, 1);
-}
-
-byte nextFace(byte face, byte amount) {
-  return (face + amount) % FACE_COUNT;
-}
-
-byte prevFace(byte face) {
-  return prevFace(face, 1);
-}
-
-byte prevFace(byte face, byte amount) {
-  return (face + (FACE_COUNT - (amount % FACE_COUNT))) % FACE_COUNT;
-}
-
 void updateSharedPulseDimness() {
   // get progress from 0 - MAX
   int pulseProgress = millis() % PULSE_LENGTH_MS;

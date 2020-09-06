@@ -5,7 +5,10 @@
 
 // -------- global constants --------
 
-const static byte oppositeFaces[] = {3, 4, 5, 0, 1, 2};
+const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
+#define CW_FROM_FACE(f, amt) faceOffsetArray[(f) + (amt)]
+#define CCW_FROM_FACE(f, amt) faceOffsetArray[6 + (f) - (amt)]
+#define OPPOSITE_FACE(f) CW_FROM_FACE((f), 3)
 
 // --- game values ---
 
@@ -27,8 +30,8 @@ const static byte oppositeFaces[] = {3, 4, 5, 0, 1, 2};
 
 #define INITIAL_BRANCH_HIT_POINTS 4
 
-#define LEAF_PLAY_TIME_MIN_MS 5000
-#define LEAF_PLAY_TIME_MAX_MS 20000
+#define LEAF_PLAY_TIME_MIN_MS 500
+#define LEAF_PLAY_TIME_MAX_MS 2000
 
 // -------- global variables --------
 

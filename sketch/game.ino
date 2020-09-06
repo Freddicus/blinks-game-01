@@ -39,8 +39,8 @@ void setup() {
   initPlayVariables();
   initSetupVariables();
 
-  gameState = SETUP;
-  blinkState = NONE;
+  gameState = GameState::SETUP;
+  blinkState = BlinkState::NONE;
 
   rearFace = -1;
   headFace = -1;
