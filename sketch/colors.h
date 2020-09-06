@@ -15,6 +15,7 @@
 #define COLOR_TRUNK makeColorRGB(255, 192, 0)              // basically orange
 #define COLOR_BUD COLOR_SPROUT                             // lime greenish
 #define COLOR_BRANCH COLOR_TRUNK                           // basically orange
+#define COLOR_NEW_LEAF makeColorHSBMapped(100, 50, 70)     // another light green
 #define COLOR_YOUNG_LEAF makeColorHSBMapped(121, 60, 70)   // light green
 #define COLOR_MATURE_LEAF makeColorHSBMapped(121, 70, 50)  // deep green
 #define COLOR_DYING_LEAF makeColorHSBMapped(60, 60, 90)    // pale yellow

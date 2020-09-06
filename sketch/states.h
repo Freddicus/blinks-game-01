@@ -20,6 +20,7 @@ enum BlinkState {
 
 enum LeafState {
   NAL,  // Not A Leaf
+  NEW,
   YOUNG,
   MATURE,
   DYING,

@@ -113,8 +113,8 @@ void playingNone() {
       isTrunkSplit = true;
       headFaceLeft = oppositeFaces[f] - 1;
       headFaceRight = oppositeFaces[f] + 1;
-      setValueSentOnFace(BRANCH_LEFT_1, headFaceLeft);
-      setValueSentOnFace(BRANCH_RIGHT_1, headFaceRight);
+      setValueSentOnFace(Message::BRANCH_LEFT_1, headFaceLeft);
+      setValueSentOnFace(Message::BRANCH_RIGHT_1, headFaceRight);
       break;
     } else if (faceValue >= BRANCH_LEFT_1 || faceValue < BRANCH_LEFT_4) {
       blinkState = BlinkState::BRANCH;
@@ -129,14 +129,14 @@ void playingNone() {
     } else if (faceValue == BRANCH_RIGHT_4 || faceValue == BRANCH_LEFT_4) {
       isFinalBranch = true;
       blinkState = BlinkState::BRANCH;
-      branchState = RANDOMIZING;
+      branchState = BranchBudState::RANDOMIZING;
       headFace = oppositeFaces[f];  // not used
-      setValueSentOnFace(START_BUDDING, rearFace);
+      setValueSentOnFace(Message::START_BUDDING, rearFace);
     } else if (faceValue == LOOKING_FOR_LEAF) {
       blinkState = BlinkState::LEAF;
-      leafState = YOUNG;
-      headFace = oppositeFaces[f];                         // not used
-      setValueSentOnFace(LOOKING_FOR_LEAF_ACK, rearFace);  // rearFace is the leaf stem
+      leafState = LeafState::NEW;
+      headFace = oppositeFaces[f];                                  // not used
+      setValueSentOnFace(Message::LOOKING_FOR_LEAF_ACK, rearFace);  // rearFace is the leaf stem
     }
   }
 }
@@ -161,7 +161,7 @@ void playingSprout() {
   }
 
   headFace = FACE_SPROUT;
-  setValueSentOnFace(TRUNK_1, headFace);
+  setValueSentOnFace(Message::TRUNK_1, headFace);
 
   if (buttonSingleClicked()) {
     txGrowthTimer.set(GROWTH_DELAY_MS);
@@ -183,7 +183,7 @@ void playingSprout() {
   }
 
   if (getLastValueReceivedOnFace(headFace) == START_THE_CLOCK) {
-    setValueSentOnFace(START_THE_CLOCK_NOW, headFace);
+    setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
   }
 }
 
@@ -215,12 +215,12 @@ void playingTrunk() {
     // both branches are budding - start the trunk timer!
     if (rxHeadLeft == rxHeadRight && rxHeadRight == START_BUDDING) {
       // message down to trunk 1 that it's time
-      setValueSentOnFace(START_THE_CLOCK, rearFace);
+      setValueSentOnFace(Message::START_THE_CLOCK, rearFace);
     }
   }
 
   if (rxHead == START_THE_CLOCK) {
-    setValueSentOnFace(START_THE_CLOCK, rearFace);
+    setValueSentOnFace(Message::START_THE_CLOCK, rearFace);
   }
 
   if (rxRear == START_THE_CLOCK_NOW) {
@@ -232,7 +232,7 @@ void playingTrunk() {
     if (isTrunkSplit) {
       // TODO: game is over! animate!!!
     } else {
-      setValueSentOnFace(START_THE_CLOCK_NOW, headFace);
+      setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     }
   }
 }
@@ -246,7 +246,7 @@ void playingBranch() {
       // --- do the growth stuff
       // TODO: add growthTimer and use growthInitiated
       if (rxRear == GROW) {
-        setValueSentOnFace(GROW_ACK, rearFace);
+        setValueSentOnFace(Message::GROW_ACK, rearFace);
       }
 
       if (rxRear == GROW && !isFinalBranch) {
@@ -261,7 +261,7 @@ void playingBranch() {
       if (rxHead == START_BUDDING) {
         branchState = RANDOMIZING;
         becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
-        setValueSentOnFace(START_BUDDING, rearFace);
+        setValueSentOnFace(Message::START_BUDDING, rearFace);
       }
 
       break;
@@ -283,10 +283,10 @@ void playingBud() {
       if (activeBudFace == -1) {
         activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
         activeBudFace = budFaces[random(4)];
-        setValueSentOnFace(LOOKING_FOR_LEAF, activeBudFace);
+        setValueSentOnFace(Message::LOOKING_FOR_LEAF, activeBudFace);
       } else {
         if (activeBudSeekingLeafTimer.isExpired()) {
-          setValueSentOnFace(QUIET, activeBudFace);
+          setValueSentOnFace(Message::QUIET, activeBudFace);
           activeBudFace = -1;
           branchState = TOO_LATE;
           tooLateCoolDownTimer.set(TOO_LATE_COOL_DOWN_MS);
@@ -311,17 +311,23 @@ void playingBud() {
 }
 
 void playingBudWithLeaf() {
+  byte rxBud = getLastValueReceivedOnFace(activeBudFace);
+
   if (!isLeafSignalTimerStarted) {
     // send connected
     isLeafSignalTimerStarted = true;
-    setValueSentOnFace(BRANCH_GREET_LEAF, activeBudFace);
+    setValueSentOnFace(Message::BRANCH_GREET_LEAF, activeBudFace);
     leafSignalTimer.set(random(LEAF_PLAY_TIME_MIN_MS, LEAF_PLAY_TIME_MAX_MS));
     return;
   }
 
   if (leafSignalTimer.isExpired()) {
-    setValueSentOnFace(BRANCH_MATURE_LEAF, activeBudFace);
+    setValueSentOnFace(Message::BRANCH_MATURE_LEAF, activeBudFace);
     leafSignalTimer.set(random(LEAF_PLAY_TIME_MIN_MS, LEAF_PLAY_TIME_MAX_MS));
+  }
+
+  if (rxBud == Message::BRANCH_MATURE_LEAF_ACK) {
+    setValueSentOnFace(Message::QUIET, activeBudFace);
   }
 }
 
@@ -330,23 +336,25 @@ void playingLeaf() {
 
   if (rxRear == Message::BRANCH_MATURE_LEAF) {
     setValueSentOnFace(Message::BRANCH_MATURE_LEAF_ACK, rearFace);
-    switch (leafState) {
-      case LeafState::NAL:
-        // should not happen
-        break;
-      case LeafState::YOUNG:
-        leafState = LeafState::MATURE;
-        break;
-      case LeafState::MATURE:
-        leafState = LeafState::DYING;
-        break;
-      case LeafState::DYING:
-        leafState = LeafState::DEAD_LEAF;
-        break;
-      case LeafState::DEAD_LEAF:
-        // TODO poisin the tree
-        break;
-    }
+    ++leafState;
+  }
+
+  switch (leafState) {
+    case LeafState::NAL:
+      // should not happen
+      break;
+    case LeafState::YOUNG:
+      leafState = LeafState::MATURE;
+      break;
+    case LeafState::MATURE:
+      leafState = LeafState::DYING;
+      break;
+    case LeafState::DYING:
+      leafState = LeafState::DEAD_LEAF;
+      break;
+    case LeafState::DEAD_LEAF:
+      // TODO poisin the tree
+      break;
   }
 }
 
@@ -354,17 +362,17 @@ void playingLeaf() {
 
 // set GROW_ACK on rearFace
 void ackGrowth() {
-  setValueSentOnFace(GROW_ACK, rearFace);
+  setValueSentOnFace(Message::GROW_ACK, rearFace);
 }
 
 // set GROW on headFace
 void sendGrowth() {
-  setValueSentOnFace(GROW, headFace);
+  setValueSentOnFace(Message::GROW, headFace);
 }
 
 void sendSplitGrowth() {
-  setValueSentOnFace(GROW, headFaceLeft);
-  setValueSentOnFace(GROW, headFaceRight);
+  setValueSentOnFace(Message::GROW, headFaceLeft);
+  setValueSentOnFace(Message::GROW, headFaceRight);
 }
 
 void updateBudFaces() {

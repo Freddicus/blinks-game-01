@@ -72,6 +72,9 @@ void handleLeafColor() {
     case LeafState::DETACHED:
       setColor(COLOR_NONE);
       break;
+    case LeafState::NEW:
+      setColor(COLOR_NEW_LEAF);
+      break;
     case LeafState::YOUNG:
       spinColor(COLOR_YOUNG_LEAF, SPIN_SPEED_FAST_MS);
       break;
