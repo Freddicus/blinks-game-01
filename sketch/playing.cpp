@@ -149,8 +149,6 @@ void playingSoil() {
 
   if (soilTimer.isExpired()) {
     blinkState = BlinkState::SPROUT;
-  } else {
-    // TODO: animate soil about to sprout
   }
 }
 

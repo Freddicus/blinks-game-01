@@ -69,10 +69,10 @@ void loop() {
   // the player will need to separate all blinks for the game to begin
 
   switch (gameState) {
-    case SETUP:
+    case GameState::SETUP:
       gameStateSetup();
       break;
-    case PLAYING:
+    case GameState::PLAYING:
       gameStatePlaying();
       break;
   }

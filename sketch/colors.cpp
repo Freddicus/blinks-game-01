@@ -31,6 +31,12 @@ void updateColors() {
   }
 }
 
+void handleSoilColor() {
+  if (!soilTimer.isExpired()) {
+    spinColor(COLOR_SOIL, 250);
+  }
+}
+
 void handleGrowthColor() {
   if (sendingGrowth || (growthInitiated == true && !txGrowthTimer.isExpired())) {
     pulseColorOnFace(COLOR_GROWTH, headFace, sharedPulseDimness);
