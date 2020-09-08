@@ -53,11 +53,14 @@ void setup() {
   branchHitPoints = INITIAL_BRANCH_HIT_POINTS;
 
   setColor(COLOR_NONE);
+  setValueSentOnAllFaces(Message::SETUP_GAME);
 }
 
 // --- game loop ---
 
 void loop() {
+  setColor(OFF);
+
   if (hasWoken()) {
     setup();
   }
@@ -74,6 +77,9 @@ void loop() {
       break;
     case GameState::PLAYING:
       gameStatePlaying();
+      detectResetGame();
       break;
   }
+
+  updateColors();
 }

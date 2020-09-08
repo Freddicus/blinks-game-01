@@ -11,6 +11,6 @@ word random(word min, word max);
 
 void updateSharedPulseDimness();
 
-void detectPanic();
+void detectResetGame();
 
 #endif

@@ -41,6 +41,7 @@ enum BranchBudState {
 
 enum Message : byte {
   QUIET,
+  SETUP_GAME,
   TRUNK_1,
   TRUNK_2,
   TRUNK_3,

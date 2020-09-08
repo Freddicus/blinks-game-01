@@ -19,9 +19,14 @@ void updateSharedPulseDimness() {
   sharedPulseDimness = sin8_C(pulseMapped);
 }
 
-void detectPanic() {
-  if (isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_PANIC_CLICKS) {
+void detectResetGame() {
+  if (!isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_RESET_GAME_CLICKS) {
     setup();
-    setValueSentOnAllFaces(QUIET);
+  }
+
+  FOREACH_FACE(f) {
+    if (getLastValueReceivedOnFace(f) == Message::SETUP_GAME && !isValueReceivedOnFaceExpired(f)) {
+      setup();
+    }
   }
 }

@@ -1,6 +1,27 @@
 #include "colors.h"
 
 void updateColors() {
+  switch (gameState) {
+    case GameState::SETUP:
+      handleSetupColors();
+      break;
+    case GameState::PLAYING:
+      handlePlayingColors();
+      break;
+  }
+}
+
+void handleSetupColors() {
+  if (gotSetupMsg) {
+    if (!isAlone()) {
+      setColor(GREEN);
+    } else {
+      pulseColor(WHITE, sharedPulseDimness);
+    }
+  }
+}
+
+void handlePlayingColors() {
   switch (blinkState) {
     case BlinkState::NONE:
       pulseColor(WHITE, sharedPulseDimness);

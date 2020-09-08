@@ -11,13 +11,10 @@ void gameStateSetup() {
   if (buttonDoubleClicked()) {
     // we're in setup mode (currently at startup only)
     // indicate to the user to detach all blinks on all blinks
-    setValueSentOnAllFaces(PLEASE_DETACH);
+    setValueSentOnAllFaces(Message::PLEASE_DETACH);
 
     // originator got the setup message
     gotSetupMsg = true;
-
-    // indicate sending setup message
-    setColor(GREEN);
   }
 
   FOREACH_FACE(f) {
@@ -25,23 +22,19 @@ void gameStateSetup() {
     bool faceValueExpired = isValueReceivedOnFaceExpired(f);
 
     // receiving the please detach message
-    if (faceValue == PLEASE_DETACH && !faceValueExpired) {
+    if (faceValue == Message::PLEASE_DETACH && !faceValueExpired) {
       // pass it along to everyone!
-      setValueSentOnAllFaces(PLEASE_DETACH);
-
-      // mark received
-      setColorOnFace(GREEN, f);
-    } else if (faceValue == PLEASE_DETACH && faceValueExpired) {
+      setValueSentOnAllFaces(Message::PLEASE_DETACH);
+    } else if (faceValue == Message::PLEASE_DETACH && faceValueExpired) {
       // no longer actively receiving detach message - note and indicate
       gotSetupMsg = true;
-      pulseColorOnFace(GREEN, f, sharedPulseDimness);
     }
   }  // for each face
 
   // if i'm alone, then i'm ready to play
   if (gotSetupMsg && isAlone()) {
-    gameState = PLAYING;
+    gameState = GameState::PLAYING;
     // don't send anything
-    setValueSentOnAllFaces(QUIET);
+    setValueSentOnAllFaces(Message::QUIET);
   }
 }

@@ -79,9 +79,6 @@ void gameStatePlaying() {
       playingLeaf();
       break;
   }
-
-  updateColors();
-  detectPanic();
 }
 
 // -------- Playing methods -------

@@ -13,7 +13,7 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 // --- game values ---
 
 #define NUM_BLINKS 18
-#define NUM_PANIC_CLICKS 6
+#define NUM_RESET_GAME_CLICKS 3
 
 #define FACE_SPROUT 0
 
@@ -49,6 +49,8 @@ extern byte sharedPulseDimness;
 
 extern Timer gameTimer;
 extern bool isGameTimerStarted;
+
+extern bool gotSetupMsg;
 
 extern void setup();
 
