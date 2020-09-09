@@ -323,37 +323,37 @@ void playingBudWithLeaf() {
 
   if (rxBud == Message::BRANCH_MATURE_LEAF_ACK) {
     setValueSentOnFace(Message::QUIET, activeBudFace);
+  } else if (rxBud == Message::DAMAGE) {
   }
 }
 
 void playingLeaf() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
+  bool isRearValueExpired = isValueReceivedOnFaceExpired(rearFace);
 
-  if (rxRear == Message::BRANCH_MATURE_LEAF) {
+  if (rxRear == Message::BRANCH_MATURE_LEAF && !isRearValueExpired) {
     setValueSentOnFace(Message::BRANCH_MATURE_LEAF_ACK, rearFace);
-    ++leafState;
+    if (leafState < LeafState::DEAD_LEAF) {
+      ++leafState;
+    }
   }
 
   switch (leafState) {
     case LeafState::NAL:
-      // should not happen
-      break;
     case LeafState::NEW:
-      leafState = LeafState::YOUNG;
-      break;
     case LeafState::YOUNG:
-      leafState = LeafState::MATURE;
-      break;
     case LeafState::MATURE:
-      leafState = LeafState::DYING;
-      break;
     case LeafState::DYING:
-      leafState = LeafState::DEAD_LEAF;
       break;
     case LeafState::DEAD_LEAF:
-      // TODO poisin the tree
+      poisonTree();
       break;
   }
+}
+
+void poisonTree() {
+  --branchHitPoints;
+  setValueSentOnFace(Message::SEND_POISON, rearFace);
 }
 
 // ----- Game Helpers ------
