@@ -346,14 +346,9 @@ void playingLeaf() {
     case LeafState::DYING:
       break;
     case LeafState::DEAD_LEAF:
-      poisonTree();
+      setValueSentOnFace(Message::SEND_POISON, rearFace);
       break;
   }
-}
-
-void poisonTree() {
-  --branchHitPoints;
-  setValueSentOnFace(Message::SEND_POISON, rearFace);
 }
 
 // ----- Game Helpers ------
