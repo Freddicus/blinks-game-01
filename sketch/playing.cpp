@@ -18,7 +18,7 @@ Timer txGrowthTimer;
 
 byte budFaces[4];
 byte activeBudFace;
-byte branchHitPoints;
+bool branchAlive;
 byte branchState;
 
 bool isLeafSignalTimerStarted;
@@ -323,7 +323,8 @@ void playingBudWithLeaf() {
 
   if (rxBud == Message::BRANCH_MATURE_LEAF_ACK) {
     setValueSentOnFace(Message::QUIET, activeBudFace);
-  } else if (rxBud == Message::DAMAGE) {
+  } else if (rxBud == Message::SEND_POISON) {
+    branchAlive = false;
   }
 }
 

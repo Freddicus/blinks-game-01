@@ -11,6 +11,7 @@
 #include <blinklib.h>
 
 #include "colors.h"
+#include "game_over.h"
 #include "globals.h"
 #include "playing.h"
 #include "setup.h"
@@ -50,7 +51,7 @@ void setup() {
   isGameTimerStarted = false;
 
   activeBudFace = -1;
-  branchHitPoints = INITIAL_BRANCH_HIT_POINTS;
+  branchAlive = true;
 
   setColor(COLOR_NONE);
   setValueSentOnAllFaces(Message::SETUP_GAME);
@@ -78,6 +79,9 @@ void loop() {
     case GameState::PLAYING:
       gameStatePlaying();
       detectResetGame();
+      break;
+    case GameState::GAME_OVER:
+      gameStateGameOver();
       break;
   }
 

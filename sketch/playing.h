@@ -24,7 +24,7 @@ extern Timer txGrowthTimer;
 
 extern byte budFaces[4];
 extern byte activeBudFace;
-extern byte branchHitPoints;
+extern bool branchAlive;
 extern byte branchState;
 
 extern Timer becomeBudCoinFlipTimer;

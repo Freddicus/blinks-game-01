@@ -5,7 +5,8 @@
 
 enum GameState {
   SETUP,
-  PLAYING
+  PLAYING,
+  GAME_OVER
 };
 
 enum BlinkState {
@@ -66,6 +67,7 @@ enum Message : byte {
   BRANCH_MATURE_LEAF,
   BRANCH_MATURE_LEAF_ACK,
   SEND_POISON,
+  GAME_OVER,
   PLEASE_DETACH
 };
 

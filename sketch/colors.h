@@ -22,10 +22,6 @@
 #define COLOR_DEAD_LEAF makeColorHSBMapped(30, 60, 60)     // "brown"
 
 void updateColors();
-void handleGrowthColor();
-void handleGameTimerColor();
-void handleBranchBudColor();
-void handleLeafColor();
 
 void pulseColor(Color color, byte pulseDimness);
 void pulseColorOnFace(Color color, byte face, byte pulseDimness);

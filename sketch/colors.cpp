@@ -8,6 +8,9 @@ void updateColors() {
     case GameState::PLAYING:
       handlePlayingColors();
       break;
+    case GameState::GAME_OVER:
+      handleGameOverColors();
+      break;
   }
 }
 
@@ -19,6 +22,10 @@ void handleSetupColors() {
       pulseColor(WHITE, sharedPulseDimness);
     }
   }
+}
+
+void handleGameOverColors() {
+  sparkle();
 }
 
 void handlePlayingColors() {
