@@ -50,6 +50,10 @@ I'm still thinking about the rest. I might want to incorporate more clicking at 
 
 Once the branches have finished growing, they send a signal down the trunk to the soil to begin gameplay timer. One idea I had, is that as the timer works its way up the tree, the leaf play becomes more and more frantic.
 
+### Branch Affinity Idea
+
+Players will repeatedlu click Blinks on their half of the branch to gain budding affinity. This could serve to distract the player from pruning and introduce a kind of tug-of-war.
+
 ## About Me
 
 Hello! I'm a professional software engineer and an amateur game designer. I even registered _Freddicus Game Studios, LLC_ in my state with lofty hopes. What could go wrong? 😂 I live in Northern NJ with my wife and two children. I would love to be considered by Move38 for an official release.
