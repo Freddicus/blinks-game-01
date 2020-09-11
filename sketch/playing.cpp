@@ -135,17 +135,20 @@ void playingNone() {
       headFace = OPPOSITE_FACE(f);
       setValueSentOnFace(SETUP_BRANCH, headFace);
       updateBudFaces();
+      break;
     } else if (faceValue == Message::SETUP_BRANCH && buttonDoubleClicked()) {
       isFinalBranch = true;
       blinkState = BlinkState::BRANCH;
       branchState = BranchBudState::RANDOMIZING;
       headFace = OPPOSITE_FACE(f);  // not used
       setValueSentOnFace(Message::START_BUDDING, rearFace);
+      break;
     } else if (faceValue == Message::LOOKING_FOR_LEAF) {
       blinkState = BlinkState::LEAF;
       leafState = LeafState::NEW;
       headFace = OPPOSITE_FACE(f);                                  // not used
       setValueSentOnFace(Message::LOOKING_FOR_LEAF_ACK, rearFace);  // rearFace is the leaf stem
+      break;
     }
   }
 }
