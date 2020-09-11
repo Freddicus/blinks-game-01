@@ -1,6 +1,6 @@
 # Make Like A Tree and Leaf
 
-I got this idea looking out the window. 🌳 🤔 💭 I don't have Blinks dev kit, yet, but I'm charging forward anyway. 😅
+I got this idea looking out the window. 🌳 🤔 💭 I don't have a Blinks dev kit, yet, but I'm charging forward anyway. 😅
 
 ## Concept
 
