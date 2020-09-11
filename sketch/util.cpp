@@ -22,6 +22,7 @@ void updateSharedPulseDimness() {
 void detectResetGame() {
   if (!isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_RESET_GAME_CLICKS) {
     setup();
+    return;
   }
 
   FOREACH_FACE(f) {

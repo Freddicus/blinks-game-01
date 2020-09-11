@@ -15,6 +15,7 @@ void gameStateSetup() {
 
     // originator got the setup message
     gotSetupMsg = true;
+    return;
   }
 
   FOREACH_FACE(f) {

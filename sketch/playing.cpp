@@ -102,6 +102,7 @@ void playingNone() {
   if (buttonDoubleClicked()) {
     blinkState = BlinkState::SOIL;
     soilTimer.set(5000);
+    return;
   }
 
   // let's find out when we become attached!
@@ -157,6 +158,7 @@ void playingSoil() {
   // allow undo switch to soil
   if (buttonDoubleClicked() && isAlone()) {
     blinkState = BlinkState::NONE;
+    return;
   }
 
   if (soilTimer.isExpired()) {
@@ -168,6 +170,7 @@ void playingSprout() {
   // allow undo sprout for overzealous players
   if (buttonDoubleClicked() && isAlone()) {
     blinkState = BlinkState::NONE;
+    return;
   }
 
   headFace = FACE_SPROUT;
@@ -176,6 +179,7 @@ void playingSprout() {
   if (buttonSingleClicked()) {
     txGrowthTimer.set(GROWTH_DELAY_MS);
     growthInitiated = true;
+    return;
   }
 
   if (growthInitiated == true && txGrowthTimer.isExpired()) {
@@ -240,7 +244,8 @@ void playingTrunk() {
 
   if (isGameTimerStarted && gameTimer.isExpired()) {
     if (isTrunkSplit) {
-      // TODO: game is over! animate!!!
+      // game time reached the top - game over!
+      setValueSentOnAllFaces(Message::END_GAME);
     } else {
       setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     }
