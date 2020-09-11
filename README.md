@@ -1,6 +1,6 @@
 # Make Like A Tree and Leaf
 
-I got this idea looking out the window. 🌳 🤔 💭
+I got this idea looking out the window. 🌳 🤔 💭 I don't have Blinks dev kit, yet, but I'm charging forward anyway. 😅
 
 ## Concept
 
@@ -33,6 +33,8 @@ The game starts with growing the tree. I'm still working on ideas to gamify this
 8. Add more Blinks to serve as branches as indicated by the growth path.
 9. Stop after four Blinks, and double-click to end the growth.
 
+The recommended setup (pre-play testing 🙃) is five vertical Blinks (one soil and four trunk) and eight branch Blinks (four on each side). That will give you four leaves to play with.
+
 ### Leaf Phase
 
 Once the tree is grown, the gameplay loop begins. I'm still thinking about how this will work and will need to play test. My initial thought is that there are two teams. One team responsible for maintaining the left side of the tree and one responsible for maintaining the right side of the tree.
@@ -50,7 +52,7 @@ I'm still thinking about the rest. I might want to incorporate more clicking at 
 
 Once the branches have finished growing, they send a signal down the trunk to the soil to begin gameplay timer. One idea I had, is that as the timer works its way up the tree, the leaf play becomes more and more frantic.
 
-### Branch Affinity Idea
+### Branch Bud Affinity Idea
 
 Players will repeatedlu click Blinks on their half of the branch to gain budding affinity. This could serve to distract the player from pruning and introduce a kind of tug-of-war.
 
