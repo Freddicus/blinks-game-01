@@ -29,8 +29,9 @@ The game starts with growing the tree. I'm still working on ideas to gamify this
 4. Take any blink and double click it. This is now your soil.
 5. In five seconds your soil will sprout.
 6. Add a Blink. This becomes the trunk. Continue to build.
-7. When the tree trunk gets to a certain height, it will branch into two paths.
-8. Add more Blinks as indicated by the growth path.
+7. When the tree trunk grows to four or five, double-click the Blink. It will branch into two paths.
+8. Add more Blinks to serve as branches as indicated by the growth path.
+9. Stop after four Blinks, and double-click to end the growth.
 
 ### Leaf Phase
 
