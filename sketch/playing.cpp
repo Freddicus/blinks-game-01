@@ -117,30 +117,25 @@ void playingNone() {
       rearFace = f;
     }
 
-    if (faceValue >= Message::TRUNK_1 || faceValue < Message::TRUNK_5) {
+    if (faceValue == Message::SETUP_TRUNK) {
       blinkState = BlinkState::TRUNK;
       headFace = OPPOSITE_FACE(f);
-      setValueSentOnFace(faceValue + 1, headFace);
+      setValueSentOnFace(Message::SETUP_TRUNK, headFace);
       break;
-    } else if (faceValue == Message::TRUNK_5) {
+    } else if (faceValue == Message::SETUP_TRUNK && buttonDoubleClicked()) {
       blinkState = BlinkState::TRUNK;
       isTrunkSplit = true;
       headFaceLeft = CW_FROM_FACE(f, 2);
       headFaceRight = CCW_FROM_FACE(f, 2);
-      setValueSentOnFace(Message::BRANCH_LEFT_1, headFaceLeft);
-      setValueSentOnFace(Message::BRANCH_RIGHT_1, headFaceRight);
+      setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
+      setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
       break;
-    } else if (faceValue >= Message::BRANCH_LEFT_1 || faceValue < Message::BRANCH_LEFT_4) {
+    } else if (faceValue == Message::SETUP_BRANCH) {
       blinkState = BlinkState::BRANCH;
       headFace = OPPOSITE_FACE(f);
-      setValueSentOnFace(faceValue + 1, headFace);
+      setValueSentOnFace(SETUP_BRANCH, headFace);
       updateBudFaces();
-    } else if (faceValue >= Message::BRANCH_RIGHT_1 || faceValue < Message::BRANCH_RIGHT_4) {
-      blinkState = BlinkState::BRANCH;
-      headFace = OPPOSITE_FACE(f);
-      setValueSentOnFace(faceValue + 1, headFace);
-      updateBudFaces();
-    } else if (faceValue == Message::BRANCH_RIGHT_4 || faceValue == Message::BRANCH_LEFT_4) {
+    } else if (faceValue == Message::SETUP_BRANCH && buttonDoubleClicked()) {
       isFinalBranch = true;
       blinkState = BlinkState::BRANCH;
       branchState = BranchBudState::RANDOMIZING;
@@ -175,7 +170,7 @@ void playingSprout() {
   }
 
   headFace = FACE_SPROUT;
-  setValueSentOnFace(Message::TRUNK_1, headFace);
+  setValueSentOnFace(Message::SETUP_TRUNK, headFace);
 
   if (buttonSingleClicked()) {
     txGrowthTimer.set(GROWTH_DELAY_MS);
