@@ -66,6 +66,7 @@ void playGame() {
       break;
     case GameState::GAME_OVER:
       gameStateGameOver();
+      detectResetGame();
       break;
   }
 }
