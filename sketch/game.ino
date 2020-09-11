@@ -72,18 +72,6 @@ void loop() {
   // then the player will double click a blink to start the game
   // the player will need to separate all blinks for the game to begin
 
-  switch (gameState) {
-    case GameState::SETUP:
-      gameStateSetup();
-      break;
-    case GameState::PLAYING:
-      gameStatePlaying();
-      detectResetGame();
-      break;
-    case GameState::GAME_OVER:
-      gameStateGameOver();
-      break;
-  }
-
+  playGame();
   updateColors();
 }

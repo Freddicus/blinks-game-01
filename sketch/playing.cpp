@@ -55,6 +55,21 @@ void initPlayVariables() {
   txGrowthTimer.set(0);
 }
 
+void playGame() {
+  switch (gameState) {
+    case GameState::SETUP:
+      gameStateSetup();
+      break;
+    case GameState::PLAYING:
+      gameStatePlaying();
+      detectResetGame();
+      break;
+    case GameState::GAME_OVER:
+      gameStateGameOver();
+      break;
+  }
+}
+
 void gameStatePlaying() {
   switch (blinkState) {
     case BlinkState::NONE:
