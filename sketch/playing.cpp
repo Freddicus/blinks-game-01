@@ -16,7 +16,7 @@ Timer txGrowthTimer;
 
 // ---- branch / bud play ----
 
-byte budFaces[4];
+byte budFaces[5];
 byte activeBudFace;
 bool branchAlive;
 byte branchState;
@@ -47,6 +47,8 @@ void initPlayVariables() {
 
   isLeafSignalTimerStarted = false;
   hasLeafFlashedGreeting = false;
+
+  branchAlive = true;
 
   leafState = LeafState::NAL;
   branchState = BranchBudState::NAB;
@@ -296,7 +298,7 @@ void playingBud() {
     case BranchBudState::BUDDING:
       if (activeBudFace == -1) {
         activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
-        activeBudFace = budFaces[random(4)];
+        activeBudFace = isFinalBranch ? budFaces[random(5)] : budFaces[random(4)];
         setValueSentOnFace(Message::LOOKING_FOR_LEAF, activeBudFace);
       } else {
         if (activeBudSeekingLeafTimer.isExpired()) {
@@ -393,6 +395,7 @@ void updateBudFaces() {
   budFaces[1] = CW_FROM_FACE(headFace, 2);
   budFaces[2] = CCW_FROM_FACE(headFace, 1);
   budFaces[3] = CCW_FROM_FACE(headFace, 2);
+  budFaces[4] = OPPOSITE_FACE(rearFace);
 }
 
 void randomizeBudAffinity() {

@@ -8,11 +8,6 @@
 #include "states.h"
 #include "util.h"
 
-// ---- trunk / branch ----
-
-extern bool isTrunkSplit;
-extern bool isFinalBranch;
-
 // --- growth ----
 
 extern bool growthInitiated;
@@ -24,18 +19,11 @@ extern Timer txGrowthTimer;
 
 // ---- branch / bud play ----
 
-extern byte budFaces[4];
 extern byte activeBudFace;
-extern bool branchAlive;
 extern byte branchState;
-
-extern Timer becomeBudCoinFlipTimer;
-extern Timer activeBudSeekingLeafTimer;
-extern Timer tooLateCoolDownTimer;
 
 // leaf play
 
-extern Timer leafLifeTimer;
 extern byte leafState;
 extern bool hasLeafFlashedGreeting;
 

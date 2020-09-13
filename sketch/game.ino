@@ -51,7 +51,6 @@ void setup() {
   isGameTimerStarted = false;
 
   activeBudFace = -1;
-  branchAlive = true;
 
   setColor(COLOR_NONE);
   setValueSentOnAllFaces(Message::SETUP_GAME);
