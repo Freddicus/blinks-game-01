@@ -1,26 +1,50 @@
 {
-  "configurations": [
-    {
-      "name": "Mac",
-      "includePath": [
-        "~/Library/Arduino15/packages/move38/hardware/avr/1.0.0/**",
-        "${workspaceFolder}"
-      ],
-      "defines": [
-        "TEST",
-        "DEBUG",
-        "F_CPU=8000000L",
-        "ARDUINO=10813",
-        "ARDUINO_AVR_BLINK",
-        "ARDUINO_ARCH_AVR"
-      ],
-      "forcedInclude": [],
-      "macFrameworkPath": ["/System/Library/Frameworks", "/Library/Frameworks"],
-      "intelliSenseMode": "clang-x64",
-      "compilerPath": "/usr/bin/clang",
-      "cStandard": "c11",
-      "cppStandard": "c++17"
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "~/Library/Arduino15/packages/move38/hardware/avr/1.0.0/**",
+                "${workspaceFolder}",
+                "/home/pi/.arduino15/packages/move38/hardware/avr/1.2.0/**"
+            ],
+            "defines": [
+                "TEST",
+                "DEBUG",
+                "F_CPU=8000000L",
+                "ARDUINO=10813",
+                "ARDUINO_AVR_BLINK",
+                "ARDUINO_ARCH_AVR"
+            ],
+            "forcedInclude": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}",
+                "~/.arduino15/packages/move38/hardware/avr/1.2.0/**"
+            ],
+            "defines": [
+                "TEST",
+                "DEBUG",
+                "F_CPU=8000000L",
+                "ARDUINO=10813",
+                "ARDUINO_AVR_BLINK",
+                "ARDUINO_ARCH_AVR"
+            ],
+            "forcedInclude": [],
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
 }
