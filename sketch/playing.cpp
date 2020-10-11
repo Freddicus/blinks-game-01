@@ -108,27 +108,35 @@ void gameStatePlaying() {
 void playingNone() {
   if (buttonDoubleClicked()) {
     blinkState = BlinkState::SOIL;
-    soilTimer.set(5000);
+    soilTimer.set(SOIL_PLAY_TIME_MS);
     return;
   }
 
+  // we start off alone so...
   // let's find out when we become attached!
+  // check for signals - can be from any stage of the game play
   FOREACH_FACE(f) {
-    byte faceValue = getLastValueReceivedOnFace(f);
-    bool faceValueExpired = isValueReceivedOnFaceExpired(f);
-    if (faceValueExpired) {
+    byte curFaceValue = getLastValueReceivedOnFace(f);
+    bool curFaceValueExpired = isValueReceivedOnFaceExpired(f);
+    if (curFaceValueExpired) {
       // continue - nothing to read
+      // also reset rearFace
+      rearFace = -1;
       continue;
     } else {
+      // globally track our rear face position
+      // rear - what the blink connects to / receives value from
+      // head - empty and ready for broadcast / more connections
       rearFace = f;
     }
 
-    if (faceValue == Message::SETUP_TRUNK) {
+    // user controls growth - double clicks end growth for current phase
+    if (curFaceValue == Message::SETUP_TRUNK && !buttonDoubleClicked()) {
       blinkState = BlinkState::TRUNK;
       headFace = OPPOSITE_FACE(f);
       setValueSentOnFace(Message::SETUP_TRUNK, headFace);
       break;
-    } else if (faceValue == Message::SETUP_TRUNK && buttonDoubleClicked()) {
+    } else if (curFaceValue == Message::SETUP_TRUNK && buttonDoubleClicked()) {
       blinkState = BlinkState::TRUNK;
       isTrunkSplit = true;
       headFaceLeft = CW_FROM_FACE(f, 2);
@@ -136,20 +144,21 @@ void playingNone() {
       setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
       setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
       break;
-    } else if (faceValue == Message::SETUP_BRANCH) {
+    } else if (curFaceValue == Message::SETUP_BRANCH && !buttonDoubleClicked()) {
       blinkState = BlinkState::BRANCH;
       headFace = OPPOSITE_FACE(f);
       setValueSentOnFace(SETUP_BRANCH, headFace);
       updateBudFaces();
       break;
-    } else if (faceValue == Message::SETUP_BRANCH && buttonDoubleClicked()) {
+    } else if (curFaceValue == Message::SETUP_BRANCH && buttonDoubleClicked()) {
       isFinalBranch = true;
       blinkState = BlinkState::BRANCH;
       branchState = BranchBudState::RANDOMIZING;
       headFace = OPPOSITE_FACE(f);  // not used
+      // TODO i think this needs to move to when the growth signal terminates
       setValueSentOnFace(Message::START_BUDDING, rearFace);
       break;
-    } else if (faceValue == Message::LOOKING_FOR_LEAF) {
+    } else if (curFaceValue == Message::LOOKING_FOR_LEAF) {
       blinkState = BlinkState::LEAF;
       leafState = LeafState::NEW;
       headFace = OPPOSITE_FACE(f);                                  // not used
@@ -172,38 +181,63 @@ void playingSoil() {
 }
 
 void playingSprout() {
+  if (isGameTimerStarted) {
+    // nothing to do as sprout during game
+    return;
+  }
+
   // allow undo sprout for overzealous players
   if (buttonDoubleClicked() && isAlone()) {
     blinkState = BlinkState::NONE;
     return;
   }
 
-  headFace = FACE_SPROUT;
-  setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+  // the program determines the head face orientation
+  if (headFace = -1) {
+    headFace = FACE_SPROUT;
+    setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+    return;
+  }
 
+  // initiate growth cycle from the sprout
+  // TODO: find out what happens if this is pressed before the tree is built
+  // TODO: potential bug fix / gameplay enhancement?
+  // TODO: this should probably control whether or not new blinks can be added to the tree
   if (buttonSingleClicked()) {
     txGrowthTimer.set(GROWTH_DELAY_MS);
     growthInitiated = true;
     return;
   }
 
+  // the button press cooldown has come - send growth
   if (growthInitiated == true && txGrowthTimer.isExpired()) {
     sendingGrowth = true;
+    // no return statement - allow next code block to execute immediately
   }
 
   // send up growth command / lights
   if (sendingGrowth) {
     sendGrowth();
+    // reset bool for subsequent growth initiations
     growthInitiated = false;
+    return;
   }
 
+  // stop sending growth
   if (getLastValueReceivedOnFace(headFace) == Message::GROW_ACK) {
     sendingGrowth = false;
+    setValueSentOnAllFaces(Message::QUIET);
+    return;
   }
 
+  // if i coded this right, start the clock message should be received from the last branch
   if (getLastValueReceivedOnFace(headFace) == Message::START_THE_CLOCK) {
     setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
+    isGameTimerStarted = true;  // sprout's accounting
+    return;
   }
+
+  // TODO: make sure sprout is doing some fun pulsing in the color routines
 }
 
 void playingTrunk() {
@@ -244,7 +278,7 @@ void playingTrunk() {
 
   if (rxRear == START_THE_CLOCK_NOW) {
     gameTimer.set(GAME_TIMER_MS);
-    isGameTimerStarted = true;
+    isGameTimerStarted = true;  // trunk's accounting
   }
 
   if (isGameTimerStarted && gameTimer.isExpired()) {

@@ -75,5 +75,6 @@
   "editor.formatOnType": true,
   "editor.formatOnPaste": true,
   "C_Cpp.loggingLevel": "Information",
-  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 2, ColumnLimit: 0}"
+  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 2, ColumnLimit: 0}",
+  "C_Cpp.clang_format_path": "/usr/bin/clang-format"
 }

@@ -62,6 +62,7 @@ void loop() {
   setColor(OFF);
 
   if (hasWoken()) {
+    // game can't continue from sleep
     setup();
   }
 

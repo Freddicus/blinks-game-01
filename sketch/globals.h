@@ -12,7 +12,6 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 
 // --- game values ---
 
-#define NUM_BLINKS 18
 #define NUM_RESET_GAME_CLICKS 3
 
 #define FACE_SPROUT 0
@@ -28,6 +27,7 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 #define SPIN_SPEED_MEDIUM_MS 500  // tick-tock
 #define SPIN_SPEED_SLOW_MS 1000
 
+#define SOIL_PLAY_TIME_MS 5000
 #define LEAF_PLAY_TIME_MIN_MS 500
 #define LEAF_PLAY_TIME_MAX_MS 2000
 
