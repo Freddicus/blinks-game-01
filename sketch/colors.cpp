@@ -44,7 +44,7 @@ void handlePlayingColors() {
       setColor(COLOR_TRUNK);
       // TODO: temp for debugging
       setColorOnFace(CYAN, rearFace);
-      if (isTrunkSplit) {
+      if (isSplit) {
         setColorOnFace(CYAN, headFaceLeft);
         setColorOnFace(CYAN, headFaceRight);
       } else {
@@ -56,7 +56,7 @@ void handlePlayingColors() {
     case BlinkState::BRANCH:
       setColor(COLOR_TRUNK);
       setColorOnFace(CYAN, rearFace);
-      if (isBranchSplit) {
+      if (isSplit) {
         setColorOnFace(CYAN, headFaceLeft);
         setColorOnFace(CYAN, headFaceRight);
       } else {

@@ -10,8 +10,7 @@
 
 // ---- trunk / branch ----
 
-extern bool isTrunkSplit;
-extern bool isBranchSplit;
+extern bool isSplit;
 
 // --- growth ----
 

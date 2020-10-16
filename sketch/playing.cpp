@@ -2,8 +2,7 @@
 
 // ---- trunk / branch ----
 
-bool isTrunkSplit;
-bool isBranchSplit;
+bool isSplit;
 
 // --- growth ----
 
@@ -37,8 +36,7 @@ bool hasLeafFlashedGreeting;
 // ---- setup methods ----
 
 void initPlayVariables() {
-  isTrunkSplit = false;
-  isBranchSplit = false;
+  isSplit = false;
 
   sendingGrowth = false;
   receivingGrowth = false;
@@ -168,7 +166,7 @@ void playingSoil() {
 
 void playingSprout() {
   // allow undo sprout for overzealous players
-  if (buttonDoubleClicked() && isAlone()) {
+  if (isAlone() && buttonDoubleClicked()) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -208,7 +206,7 @@ void playingTrunk() {
   // if our head is not receiving anything, and we're double-clicked, then we split
   if (buttonDoubleClicked() && isHeadClear) {
     // allow undo - use not operator
-    isTrunkSplit = !isTrunkSplit;
+    isSplit = !isSplit;
     headFaceLeft = CW_FROM_FACE(rearFace, 2);
     headFaceRight = CCW_FROM_FACE(rearFace, 2);
     setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
@@ -224,26 +222,25 @@ void playingTrunk() {
 
   if (rxRear == Message::GROW) {
     receivingGrowth = true;
-    if (isTrunkSplit) {
+    if (isSplit) {
       setValueSentOnFace(Message::GROW, headFaceLeft);
       setValueSentOnFace(Message::GROW, headFaceRight);
     } else {
       setValueSentOnFace(Message::GROW, headFace);
     }
     return;
-  }
-
-  if (rxRear == Message::QUIET) {
+  } else if (rxRear == Message::QUIET) {
     receivingGrowth = false;
     setValueSentOnAllFaces(Message::QUIET);
     return;
   }
 
   if (isGameTimerStarted && gameTimer.isExpired()) {
-    if (isTrunkSplit) {
+    if (isSplit) {
       // game time reached the top - game over!
       setValueSentOnAllFaces(Message::END_GAME);
     } else {
+      // start the next timer in the next trunk segment
       setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     }
   }
@@ -257,7 +254,7 @@ void playingBranch() {
   // if our head is not receiving anything, and we're double-clicked, then we split
   if (buttonDoubleClicked() && isHeadClear) {
     // allow undo - use not operator
-    isBranchSplit = !isBranchSplit;
+    isSplit = !isSplit;
     headFaceLeft = CW_FROM_FACE(rearFace, 2);
     headFaceRight = CCW_FROM_FACE(rearFace, 2);
     setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
@@ -265,27 +262,29 @@ void playingBranch() {
     return;
   }
 
+  // received grow, so let's send it along
+  if (rxRear == Message::GROW) {
+    receivingGrowth = true;
+    if (isSplit) {
+      setValueSentOnFace(Message::GROW, headFaceLeft);
+      setValueSentOnFace(Message::GROW, headFaceRight);
+    } else {
+      setValueSentOnFace(Message::GROW, headFace);
+    }
+
+    // let's also figure out if we're going to bud
+    if (becomeBudCoinFlipTimer.isExpired()) {
+      branchState = BranchBudState::RANDOMIZING;
+    }
+  } else if (rxRear == Message::QUIET) {
+    receivingGrowth = false;
+    setValueSentOnAllFaces(Message::QUIET);
+    return;
+  }
+
   switch (branchState) {
     case BranchBudState::NAB:
-      // --- do the growth stuff
-      if (rxRear == Message::GROW) {
-        receivingGrowth = true;
-        if (isTrunkSplit) {
-          setValueSentOnFace(Message::GROW, headFaceLeft);
-          setValueSentOnFace(Message::GROW, headFaceRight);
-        } else {
-          setValueSentOnFace(Message::GROW, headFace);
-        }
-        return;
-      }
-
-      // --- do the post-growth stuff
-      if (rxHead == Message::START_BUDDING) {
-        branchState = BranchBudState::RANDOMIZING;
-        becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
-        setValueSentOnFace(Message::START_BUDDING, rearFace);
-      }
-
+      // do nothing
       break;
     case BranchBudState::RANDOMIZING:
       randomizeBudAffinity();
@@ -322,8 +321,8 @@ void playingBud() {
       break;
     case BranchBudState::TOO_LATE:
       if (tooLateCoolDownTimer.isExpired()) {
-        branchState = BranchBudState::RANDOMIZING;
-        becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
+        blinkState = BlinkState::BRANCH;
+        branchState = BranchBudState::NAB;
       }
       break;
     case BranchBudState::GREW_A_LEAF:
@@ -396,10 +395,7 @@ void updateBudFaces() {
 }
 
 void randomizeBudAffinity() {
-  bool becomeBud = false;
-  if (becomeBudCoinFlipTimer.isExpired()) {
-    becomeBud = flipCoin();
-  }
+  bool becomeBud = flipCoin() & flipCoin();
 
   // should i be a bud?
   if (becomeBud) {
@@ -407,5 +403,7 @@ void randomizeBudAffinity() {
     branchState = BranchBudState::BUDDING;
   } else {
     becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
+    blinkState = BlinkState::BRANCH;
+    branchState = BranchBudState::NAB;
   }
 }
