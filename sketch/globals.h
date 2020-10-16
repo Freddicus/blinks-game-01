@@ -18,6 +18,7 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 
 #define PULSE_LENGTH_MS 2000
 #define GROWTH_DELAY_MS 1250
+#define GROWTH_COOLDOWN_MS 1250
 #define BECOME_BUD_COIN_FLIP_COOLDOWN_MS 7500
 #define ASK_FOR_LEAF_MAX_TIME_MS 5000
 #define ASK_FOR_LEAF_MIN_TIME_MS 1250
