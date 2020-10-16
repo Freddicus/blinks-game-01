@@ -8,9 +8,12 @@
 #include "states.h"
 #include "util.h"
 
+// ---- trunk / branch ----
+
+extern bool isSplit;
+
 // --- growth ----
 
-extern bool growthInitiated;
 extern bool sendingGrowth;
 extern bool receivingGrowth;
 
@@ -46,9 +49,6 @@ void playingLeaf();
 
 // ----- Game Helpers ------
 
-void ackGrowth();
-void sendGrowth();
-void sendSplitGrowth();
 void updateBudFaces();
 void randomizeBudAffinity();
 

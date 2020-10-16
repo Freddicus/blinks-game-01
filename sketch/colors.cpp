@@ -42,11 +42,26 @@ void handlePlayingColors() {
       break;
     case BlinkState::TRUNK:
       setColor(COLOR_TRUNK);
+      // TODO: temp for debugging
+      setColorOnFace(CYAN, rearFace);
+      if (isSplit) {
+        setColorOnFace(CYAN, headFaceLeft);
+        setColorOnFace(CYAN, headFaceRight);
+      } else {
+        setColorOnFace(CYAN, headFace);
+      }
       handleGrowthColor();
       handleGameTimerColor();
       break;
     case BlinkState::BRANCH:
       setColor(COLOR_TRUNK);
+      setColorOnFace(CYAN, rearFace);
+      if (isSplit) {
+        setColorOnFace(CYAN, headFaceLeft);
+        setColorOnFace(CYAN, headFaceRight);
+      } else {
+        setColorOnFace(CYAN, headFace);
+      }
       handleGrowthColor();
       handleBranchBudColor();
       break;
@@ -66,7 +81,7 @@ void handleSoilColor() {
 }
 
 void handleGrowthColor() {
-  if (sendingGrowth || (growthInitiated == true && !txGrowthTimer.isExpired())) {
+  if (sendingGrowth) {
     pulseColorOnFace(COLOR_GROWTH, headFace, sharedPulseDimness);
   }
 
