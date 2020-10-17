@@ -31,3 +31,12 @@ void detectResetGame() {
     }
   }
 }
+
+void detectEndGame() {
+  FOREACH_FACE(f) {
+    if (getLastValueReceivedOnFace(f) == Message::END_GAME && !isValueReceivedOnFaceExpired(f)) {
+      gameState = GameState::GAME_OVER;
+      setValueSentOnFace(Message::END_GAME, f);
+    }
+  }
+}

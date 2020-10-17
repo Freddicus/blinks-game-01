@@ -61,6 +61,7 @@ void playGame() {
     case GameState::PLAYING:
       gameStatePlaying();
       detectResetGame();
+      detectEndGame();
       break;
     case GameState::GAME_OVER:
       gameStateGameOver();
