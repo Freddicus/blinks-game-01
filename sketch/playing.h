@@ -14,11 +14,9 @@ extern bool isSplit;
 
 // --- growth ----
 
-extern bool sendingGrowth;
 extern bool receivingGrowth;
 
 extern Timer soilTimer;
-extern Timer txGrowthTimer;
 
 // ---- branch / bud play ----
 

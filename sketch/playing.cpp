@@ -2,23 +2,33 @@
 
 // ---- trunk / branch ----
 
+// set to true if the growth path is split left/right
 bool isSplit;
 
 // --- growth ----
 
-bool sendingGrowth;
+// set to true when rear face is getting GROW message
 bool receivingGrowth;
 
+// used briefly to countdown the transition from soil to sprout
 Timer soilTimer;
-Timer txGrowthTimer;
 
 // ---- branch / bud play ----
 
+// holds face indexes for potential buds
 byte budFaces[5];
+
+// the face that's actively budding or -1 if not budding
 byte activeBudFace;
+
+// TODO: reconsider this - no longer applivaple with new gameplay
 bool branchAlive;
+
+// track the current state of the branch / bud
 byte branchState;
 
+// true if the leaf signal timer has started
+// TODO: determine when to reset
 bool isLeafSignalTimerStarted;
 
 Timer becomeBudCoinFlipTimer;
@@ -38,7 +48,6 @@ bool hasLeafFlashedGreeting;
 void initPlayVariables() {
   isSplit = false;
 
-  sendingGrowth = false;
   receivingGrowth = false;
 
   isLeafSignalTimerStarted = false;
@@ -50,7 +59,6 @@ void initPlayVariables() {
   branchState = BranchBudState::NAB;
 
   soilTimer.set(0);
-  txGrowthTimer.set(0);
 }
 
 void playGame() {

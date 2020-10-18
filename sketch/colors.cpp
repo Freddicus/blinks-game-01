@@ -81,12 +81,17 @@ void handleSoilColor() {
 }
 
 void handleGrowthColor() {
-  if (sendingGrowth) {
-    pulseColorOnFace(COLOR_GROWTH, headFace, sharedPulseDimness);
-  }
-
   if (receivingGrowth) {
+    // pulse that i'm receiving growth
     pulseColorOnFace(COLOR_GROWTH, rearFace, sharedPulseDimness);
+
+    // if receiving growth, then i'm sending it too, so pulse head
+    if (isSplit) {
+      pulseColorOnFace(COLOR_GROWTH, headFaceLeft, sharedPulseDimness);
+      pulseColorOnFace(COLOR_GROWTH, headFaceRight, sharedPulseDimness);
+    } else {
+      pulseColorOnFace(COLOR_GROWTH, headFace, sharedPulseDimness);
+    }
   }
 }
 
