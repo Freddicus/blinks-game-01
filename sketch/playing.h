@@ -23,7 +23,7 @@ extern Timer soilTimer;
 extern byte activeBudFace;
 extern byte branchState;
 
-// leaf play
+// ---- leaf play ----
 
 extern byte leafState;
 extern bool hasLeafFlashedGreeting;

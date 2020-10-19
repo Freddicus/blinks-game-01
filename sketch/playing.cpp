@@ -1,11 +1,15 @@
 #include "playing.h"
 
+// ------------------------
 // ---- trunk / branch ----
+// ------------------------
 
 // set to true if the growth path is split left/right
 bool isSplit;
 
+// ---------------
 // --- growth ----
+// ---------------
 
 // set to true when rear face is getting GROW message
 bool receivingGrowth;
@@ -13,7 +17,9 @@ bool receivingGrowth;
 // used briefly to countdown the transition from soil to sprout
 Timer soilTimer;
 
+// ---------------------------
 // ---- branch / bud play ----
+// ---------------------------
 
 // holds face indexes for potential buds
 byte budFaces[5];
@@ -27,18 +33,33 @@ bool branchAlive;
 // track the current state of the branch / bud
 byte branchState;
 
+// ---------------------------
+// ---- bud <-> leaf play ----
+// ---------------------------
+
 // true if the leaf signal timer has started
-// TODO: determine when to reset
 bool isLeafSignalTimerStarted;
 
+// timer that controls whether or not bud is elegible to randomize to receive a leaf
 Timer becomeBudCoinFlipTimer;
+
+// timer that controls how long to seek a leaf
 Timer activeBudSeekingLeafTimer;
+
+// timer that controls how long to show that the player was too late in attaching a leaf
 Timer tooLateCoolDownTimer;
+
+// timer that binds the leaf to the bud
 Timer leafSignalTimer;
 
-// leaf play
+// -------------------
+// ---- leaf play ----
+// -------------------
 
+// TODO: not implemented
 Timer leafLifeTimer;
+
+// tracks the state of maturity for the leaf
 byte leafState;
 
 bool hasLeafFlashedGreeting;
@@ -312,6 +333,8 @@ void playingBud() {
   switch (branchState) {
     case BranchBudState::BUDDING:
       if (activeBudFace == -1) {
+        // reset leaf signal timer for current future leaves
+        isLeafSignalTimerStarted = false;
         activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
         activeBudFace = isFinalBranch ? budFaces[random(5)] : budFaces[random(4)];
         setValueSentOnFace(Message::LOOKING_FOR_LEAF, activeBudFace);
