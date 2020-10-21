@@ -115,6 +115,9 @@ void handleBranchBudColor() {
     case BranchBudState::TOO_LATE:
       pulseColor(RED, sharedPulseDimness);
       break;
+    case BranchBudState::DEAD_BRANCH:
+      setColor(RED);
+      break;
   }
 }
 

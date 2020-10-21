@@ -27,9 +27,6 @@ byte budFaces[5];
 // the face that's actively budding or -1 if not budding
 byte activeBudFace;
 
-// TODO: reconsider this - no longer applivaple with new gameplay
-bool branchAlive;
-
 // track the current state of the branch / bud
 byte branchState;
 
@@ -73,8 +70,6 @@ void initPlayVariables() {
 
   isLeafSignalTimerStarted = false;
   hasLeafFlashedGreeting = false;
-
-  branchAlive = true;
 
   leafState = LeafState::NAL;
   branchState = BranchBudState::NAB;
@@ -313,6 +308,8 @@ void playingBranch() {
   }
 
   switch (branchState) {
+    case BranchBudState::DEAD_BRANCH:
+      return;
     case BranchBudState::NAB:
       // do nothing
       break;
@@ -366,6 +363,7 @@ void playingBud() {
 void playingBudWithLeaf() {
   byte rxBud = getLastValueReceivedOnFace(activeBudFace);
 
+  // leaf signal timer never started, so let's kick off the leaf maturity advancement signaling
   if (!isLeafSignalTimerStarted) {
     // send connected
     isLeafSignalTimerStarted = true;
@@ -375,6 +373,7 @@ void playingBudWithLeaf() {
     return;
   }
 
+  // the leaf signal timer is expired... tell the leaf to mature by one, then set the timer
   if (leafSignalTimer.isExpired()) {
     setValueSentOnFace(Message::BRANCH_MATURE_LEAF, activeBudFace);
     leafSignalTimer.set(random(LEAF_PLAY_TIME_MIN_MS, LEAF_PLAY_TIME_MAX_MS));
@@ -383,7 +382,7 @@ void playingBudWithLeaf() {
   if (rxBud == Message::BRANCH_MATURE_LEAF_ACK) {
     setValueSentOnFace(Message::QUIET, activeBudFace);
   } else if (rxBud == Message::SEND_POISON) {
-    branchAlive = false;
+    branchState = BranchBudState::DEAD_BRANCH;
   }
 }
 
@@ -391,11 +390,14 @@ void playingLeaf() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
   bool isRearValueExpired = isValueReceivedOnFaceExpired(rearFace);
 
+  // every time i get the message to mature, i acknowledge and advance my state by one
   if (rxRear == Message::BRANCH_MATURE_LEAF && !isRearValueExpired) {
     setValueSentOnFace(Message::BRANCH_MATURE_LEAF_ACK, rearFace);
     if (leafState < LeafState::DEAD_LEAF) {
       ++leafState;
     }
+  } else {
+    setValueSentOnFace(Message::QUIET, rearFace);
   }
 
   switch (leafState) {
