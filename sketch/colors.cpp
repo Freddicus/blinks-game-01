@@ -164,10 +164,10 @@ void pulseColorOnFace(Color color, byte face, byte pulseDimness) {
 
 void sparkle() {
   FOREACH_FACE(f) {
-    byte randomH = random(360);
-    byte randomS = random(100);
-    byte randomB = random(40);  // 40% max brightness
-    Color randomColor = makeColorHSBMapped(randomH, randomS, randomB);
+    byte randomR = random(32);
+    byte randomG = random(32);
+    byte randomB = random(32);
+    Color randomColor = MAKECOLOR_5BIT_RGB(randomR, randomG, randomB);
     setColorOnFace(randomColor, f);
   }
 }
@@ -181,11 +181,4 @@ void spinColor(Color color, long revolutionMs) {
   setColorOnFace(dim(color, 120), CCW_FROM_FACE(spinMapped, 3));
   setColorOnFace(dim(color, 80), CCW_FROM_FACE(spinMapped, 4));
   setColorOnFace(dim(color, 40), CCW_FROM_FACE(spinMapped, 5));
-}
-
-Color makeColorHSBMapped(word h, word s, word b) {
-  byte mappedH = map(h, 0, 360, 0, 255);
-  byte mappedS = map(s, 0, 100, 0, 255);
-  byte mappedB = map(b, 0, 100, 0, 255);
-  return makeColorHSB(mappedH, mappedS, mappedB);
 }
