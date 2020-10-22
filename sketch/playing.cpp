@@ -127,7 +127,8 @@ void gameStatePlaying() {
 // -------- Playing methods -------
 
 void playingNone() {
-  if (buttonDoubleClicked()) {
+  // double click turns blink into soil
+  if (isAlone() && buttonDoubleClicked()) {
     blinkState = BlinkState::SOIL;
     soilTimer.set(SOIL_PLAY_TIME_MS);
     return;
@@ -152,24 +153,29 @@ void playingNone() {
     }
 
     switch (curFaceValue) {
+      // setup trunk message comes from other trunk blinks or the sprout
       case Message::SETUP_TRUNK:
         blinkState = BlinkState::TRUNK;
         headFace = OPPOSITE_FACE(f);
-        setValueSentOnFace(Message::SETUP_TRUNK, headFace);  // tell the next guy i'm a trunk, so you will be too
-        setValueSentOnFace(Message::SETUP_TRUNK, rearFace);  // tell the previous guy i'm a trunk
         break;
+      // setup branch message comes from other branches or the split trunk
       case Message::SETUP_BRANCH:
         blinkState = BlinkState::BRANCH;
         headFace = OPPOSITE_FACE(f);
-        setValueSentOnFace(Message::SETUP_BRANCH, headFace);  // tell the next guy i'm a branch, so you will be too
-        setValueSentOnFace(Message::SETUP_BRANCH, rearFace);  // tell the previous guy i'm a branch
+
+        // determine where buds can go initially
         updateBudFaces();
         break;
+      // a bud is looking for a leaf - so we become a leaf
       case Message::LOOKING_FOR_LEAF:
         blinkState = BlinkState::LEAF;
         leafState = LeafState::NEW;
-        headFace = OPPOSITE_FACE(f);                                  // not used...yet :)
-        setValueSentOnFace(Message::LOOKING_FOR_LEAF_ACK, rearFace);  // tell the branch, it got a leaf (rearFace is the leaf stem)
+
+        // this head face index is not currently used, but let's track it in case
+        headFace = OPPOSITE_FACE(f);
+
+        // tell the branch, it got a leaf (rearFace is the leaf stem)
+        setValueSentOnFace(Message::LOOKING_FOR_LEAF_ACK, rearFace);
         break;
       default:
         continue;
@@ -232,11 +238,22 @@ void playingTrunk() {
   if (buttonDoubleClicked() && isHeadClear) {
     // allow undo - use not operator
     isSplit = !isSplit;
-    headFaceLeft = CW_FROM_FACE(rearFace, 2);
-    headFaceRight = CCW_FROM_FACE(rearFace, 2);
+
+    // only calculate this once per loop when the change is made
+    headFaceLeft = isSpilt ? CW_FROM_FACE(rearFace, 2) : -1;
+    headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
+  }
+
+  // always send message to the rear
+  setValueSentOnFace(Message::SETUP_TRUNK, rearFace);  // tell the previous guy i'm a trunk
+
+  if (isSplit) {
+    // if i'm a split trunk, i'm making branches
     setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
     setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
-    return;
+  } else {
+    // tell the next guy i'm a trunk, so you will be too
+    setValueSentOnFace(Message::SETUP_TRUNK, headFace);
   }
 
   if (!isGameTimerStarted && rxRear == START_THE_CLOCK_NOW) {
@@ -280,11 +297,25 @@ void playingBranch() {
   if (buttonDoubleClicked() && isHeadClear) {
     // allow undo - use not operator
     isSplit = !isSplit;
-    headFaceLeft = CW_FROM_FACE(rearFace, 2);
-    headFaceRight = CCW_FROM_FACE(rearFace, 2);
+
+    // only calculate this once per loop when the change is made
+    headFaceLeft = isSpilt ? CW_FROM_FACE(rearFace, 2) : -1;
+    headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
+
+    // determine where buds can go after a split
+    updateBudFaces();
+  }
+
+  // always send message to the rear
+  setValueSentOnFace(Message::SETUP_BRANCH, rearFace);  // tell the previous guy i'm a trunk
+
+  if (isSplit) {
+    // if i'm a split branch, i'm making branches
     setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
     setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
-    return;
+  } else {
+    // tell the next guy i'm a branch, so you will be too
+    setValueSentOnFace(Message::SETUP_TRUNK, headFace);
   }
 
   // received grow, so let's send it along
@@ -421,11 +452,19 @@ void sendSplitGrowth() {
 }
 
 void updateBudFaces() {
-  budFaces[0] = CW_FROM_FACE(headFace, 1);
-  budFaces[1] = CW_FROM_FACE(headFace, 2);
-  budFaces[2] = CCW_FROM_FACE(headFace, 1);
-  budFaces[3] = CCW_FROM_FACE(headFace, 2);
-  budFaces[4] = OPPOSITE_FACE(rearFace);
+  if (isSplit) {
+    budFaces[0] = CW_FROM_FACE(headFace, 1);
+    budFaces[1] = CW_FROM_FACE(headFace, 1);
+    budFaces[2] = CCW_FROM_FACE(headFace, 1);
+    budFaces[3] = CCW_FROM_FACE(headFace, 1);
+    budFaces[4] = OPPOSITE_FACE(rearFace);
+  } else {
+    budFaces[0] = CW_FROM_FACE(headFace, 1);
+    budFaces[1] = CW_FROM_FACE(headFace, 2);
+    budFaces[2] = CCW_FROM_FACE(headFace, 1);
+    budFaces[3] = CCW_FROM_FACE(headFace, 2);
+    budFaces[4] = OPPOSITE_FACE(rearFace);
+  }
 }
 
 void randomizeBudAffinity() {
