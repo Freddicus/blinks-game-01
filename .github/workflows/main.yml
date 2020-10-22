@@ -34,5 +34,5 @@ jobs:
  
       # Finally, we compile the sketch
       - name: Compile Sketch
-        run: arduino-cli compile --fqbn move38:avr ./sketch
+        run: arduino-cli compile --fqbn move38:avr:blink ./sketch
         
