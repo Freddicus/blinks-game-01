@@ -34,11 +34,11 @@ jobs:
  
       # Finally, we compile the sketch
       - name: Compile Sketch
-        run: arduino-cli compile --fqbn move38:avr:blink -o mlatal.hex ./sketch
+        run: arduino-cli compile --fqbn move38:avr:blink --output-dir ./build ./sketch
       
       - name: Upload Sketch
         uses: actions/upload-artifact@v2
         with:
           name: compiled-game-code
-          path: mlatal.hex
+          path: ./build/
         
