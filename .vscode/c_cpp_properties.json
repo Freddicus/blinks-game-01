@@ -27,8 +27,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}",
-                "~/.arduino15/packages/move38/hardware/avr/1.2.0/**"
+                "~/.arduino15/packages/move38/hardware/avr/1.2.0/**",
+                "${workspaceFolder}"
             ],
             "defines": [
                 "TEST",
@@ -39,7 +39,7 @@
                 "ARDUINO_ARCH_AVR"
             ],
             "forcedInclude": [],
-            "intelliSenseMode": "gcc-x64",
+            "intelliSenseMode": "gcc-arm64",
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++17"
