@@ -28,6 +28,9 @@ void handlePlayingColors();
 void handleGameOverColors();
 void handleGrowthColor();
 void handleGameTimerColor();
+void handleBranchBudColor();
+void handleGrowthColor();
+void handleLeafColor();
 
 void pulseColor(Color color, byte pulseDimness);
 void pulseColorOnFace(Color color, byte face, byte pulseDimness);
