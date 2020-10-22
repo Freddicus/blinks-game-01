@@ -183,6 +183,8 @@ void playingNone() {
   }
 }
 
+// right now soil just exists to be a buffer transition to sprout
+// we'll animate something here
 void playingSoil() {
   // allow undo switch to soil
   if (buttonDoubleClicked() && isAlone()) {
@@ -195,9 +197,10 @@ void playingSoil() {
   }
 }
 
+// starts the game timer and initiates growth up the tree with single clicks
 void playingSprout() {
   // allow undo sprout for overzealous players
-  if (isAlone() && buttonDoubleClicked()) {
+  if (!isGameTimerStarted && isAlone() && buttonDoubleClicked()) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -225,14 +228,11 @@ void playingSprout() {
     }
     setValueSentOnFace(Message::QUIET, headFace);
   }
-
-  // TODO: make sure sprout is doing some fun pulsing in the color routines
 }
 
 void playingTrunk() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
-  byte rxHead = getLastValueReceivedOnFace(headFace);
-  bool isHeadClear = isValueReceivedOnFaceExpired(headFace);
+  bool isHeadClear = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
 
   // if our head is not receiving anything, and we're double-clicked, then we split
   if (buttonDoubleClicked() && isHeadClear) {
@@ -240,7 +240,7 @@ void playingTrunk() {
     isSplit = !isSplit;
 
     // only calculate this once per loop when the change is made
-    headFaceLeft = isSpilt ? CW_FROM_FACE(rearFace, 2) : -1;
+    headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : -1;
     headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
   }
 
@@ -290,8 +290,7 @@ void playingTrunk() {
 
 void playingBranch() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
-  byte rxHead = getLastValueReceivedOnFace(headFace);
-  bool isHeadClear = isValueReceivedOnFaceExpired(headFace);
+  bool isHeadClear = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
 
   // if our head is not receiving anything, and we're double-clicked, then we split
   if (buttonDoubleClicked() && isHeadClear) {
@@ -299,7 +298,7 @@ void playingBranch() {
     isSplit = !isSplit;
 
     // only calculate this once per loop when the change is made
-    headFaceLeft = isSpilt ? CW_FROM_FACE(rearFace, 2) : -1;
+    headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : -1;
     headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
 
     // determine where buds can go after a split
@@ -355,8 +354,7 @@ void playingBranch() {
 
 void playingBud() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
-  byte rxHead = getLastValueReceivedOnFace(headFace);
-  bool isFinalBranch = isValueReceivedOnFaceExpired(headFace);
+  bool isFinalBranch = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
 
   switch (branchState) {
     case BranchBudState::BUDDING:
