@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Build Blinks Sketch
+name: Build Game
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -11,7 +11,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
      # This is the list of steps this job will run.
     steps:
@@ -23,7 +23,6 @@ jobs:
       # configure the Arduino CLI on the system.
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1.0.0
-        with: ${{ secrets.GITHUB_TOKEN }}
  
       # We then install the platform, which one will be determined
       # dynamically by the build matrix.
