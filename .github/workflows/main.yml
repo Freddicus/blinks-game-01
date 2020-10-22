@@ -30,6 +30,7 @@ jobs:
         run: |
           arduino-cli core update-index --additional-urls https://github.com/bigjosh/Move38-Arduino-Platform/releases/latest/download/package_move38.com-blinks_index.json
           arduino-cli core install arduino:avr
+          arduino-cli core install Move38-Blinks-Library:avr:blink
  
       # Finally, we compile the sketch
       - name: Compile Sketch
