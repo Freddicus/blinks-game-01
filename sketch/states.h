@@ -4,7 +4,6 @@
 #include <blinklib.h>
 
 enum GameState {
-  SETUP,
   PLAYING,
   GAME_OVER
 };
@@ -42,7 +41,6 @@ enum BranchBudState {
 
 enum Message : byte {
   QUIET,
-  SETUP_GAME,
   SETUP_TRUNK,
   SETUP_BRANCH,
   GROW,
@@ -54,7 +52,7 @@ enum Message : byte {
   BRANCH_MATURE_LEAF_ACK,
   SEND_POISON,
   END_GAME,
-  PLEASE_DETACH
+  RESET_GAME
 };
 
 #endif

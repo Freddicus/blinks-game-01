@@ -12,7 +12,7 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 
 // --- game values ---
 
-#define NUM_RESET_GAME_CLICKS 3
+#define NUM_RESET_GAME_CLICKS 5
 
 #define FACE_SPROUT 0
 

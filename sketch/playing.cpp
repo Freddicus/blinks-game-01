@@ -71,27 +71,21 @@ void initPlayVariables() {
   isLeafSignalTimerStarted = false;
   hasLeafFlashedGreeting = false;
 
+  rearFace = -1;
+  headFace = -1;
+  headFaceLeft = -1;
+  headFaceRight = -1;
+
+  isGameTimerStarted = false;
+
+  activeBudFace = -1;
+
+  gameState = GameState::PLAYING;
+  blinkState = BlinkState::NONE;
   leafState = LeafState::NAL;
   branchState = BranchBudState::NAB;
 
   soilTimer.set(0);
-}
-
-void playGame() {
-  switch (gameState) {
-    case GameState::SETUP:
-      gameStateSetup();
-      break;
-    case GameState::PLAYING:
-      gameStatePlaying();
-      detectResetGame();
-      detectEndGame();
-      break;
-    case GameState::GAME_OVER:
-      gameStateGameOver();
-      detectResetGame();
-      break;
-  }
 }
 
 void gameStatePlaying() {

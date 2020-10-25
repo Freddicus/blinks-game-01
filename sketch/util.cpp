@@ -26,7 +26,8 @@ void detectResetGame() {
   }
 
   FOREACH_FACE(f) {
-    if (getLastValueReceivedOnFace(f) == Message::SETUP_GAME && !isValueReceivedOnFaceExpired(f)) {
+    if (getLastValueReceivedOnFace(f) == Message::RESET_GAME && !isValueReceivedOnFaceExpired(f)) {
+      setValueSentOnAllFaces(Message::RESET_GAME);
       setup();
     }
   }

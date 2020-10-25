@@ -23,7 +23,6 @@
 
 void updateColors();
 
-void handleSetupColors();
 void handlePlayingColors();
 void handleGameOverColors();
 void handleGrowthColor();
