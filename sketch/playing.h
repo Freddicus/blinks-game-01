@@ -4,7 +4,6 @@
 #include "colors.h"
 #include "game_over.h"
 #include "globals.h"
-#include "setup.h"
 #include "states.h"
 #include "util.h"
 
@@ -31,7 +30,6 @@ extern bool hasLeafFlashedGreeting;
 // ---- setup methods ----
 
 void initPlayVariables();
-void playGame();
 void gameStatePlaying();
 
 // -------- Playing methods -------

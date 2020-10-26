@@ -1,26 +1,18 @@
 #include "colors.h"
 
 void updateColors() {
+  // initialize color each loop so we can see if we miss anything
+  setColor(COLOR_NONE);
+
+  updateSharedPulseDimness();
+
   switch (gameState) {
-    case GameState::SETUP:
-      handleSetupColors();
-      break;
     case GameState::PLAYING:
       handlePlayingColors();
       break;
     case GameState::GAME_OVER:
       handleGameOverColors();
       break;
-  }
-}
-
-void handleSetupColors() {
-  if (gotSetupMsg) {
-    if (!isAlone()) {
-      setColor(GREEN);
-    } else {
-      pulseColor(WHITE, sharedPulseDimness);
-    }
   }
 }
 

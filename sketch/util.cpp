@@ -20,14 +20,19 @@ void updateSharedPulseDimness() {
 }
 
 void detectResetGame() {
+  // detect the initiator of game reset
   if (!isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_RESET_GAME_CLICKS) {
     setup();
+    setValueSentOnAllFaces(Message::RESET_GAME);
     return;
   }
 
+  // detect propagation of game reset
   FOREACH_FACE(f) {
-    if (getLastValueReceivedOnFace(f) == Message::SETUP_GAME && !isValueReceivedOnFaceExpired(f)) {
+    if (getLastValueReceivedOnFace(f) == Message::RESET_GAME && !isValueReceivedOnFaceExpired(f)) {
       setup();
+      setValueSentOnAllFaces(Message::RESET_GAME);
+      return;
     }
   }
 }
