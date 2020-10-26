@@ -116,10 +116,6 @@ void gameStatePlaying() {
       playingLeaf();
       break;
   }
-
-  if (isAlone()) {
-    blinkState = BlinkState::NONE;
-  }
 }
 
 // -------- Playing methods -------
