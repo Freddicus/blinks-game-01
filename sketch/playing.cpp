@@ -61,7 +61,11 @@ byte leafState;
 
 bool hasLeafFlashedGreeting;
 
-// ---- setup methods ----
+// --- initialize ---
+
+// initializing unsigned 8-bit ints to -1 is a little sketchy, but shouldn't be a problem
+// it's effectively initializing them to 255, which doesn't have collision with
+// the current code's use cases
 
 void initPlayVariables() {
   isSplit = false;

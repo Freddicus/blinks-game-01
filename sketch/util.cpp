@@ -22,13 +22,14 @@ void updateSharedPulseDimness() {
 void detectResetGame() {
   if (!isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_RESET_GAME_CLICKS) {
     setup();
-    return;
+    setValueSentOnAllFaces(Message::RESET_GAME);
+    returnl;
   }
 
   FOREACH_FACE(f) {
     if (getLastValueReceivedOnFace(f) == Message::RESET_GAME && !isValueReceivedOnFaceExpired(f)) {
       setValueSentOnAllFaces(Message::RESET_GAME);
-      setup();
+      return;
     }
   }
 }
