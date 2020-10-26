@@ -23,7 +23,7 @@ void handleGameOverColors() {
 void handlePlayingColors() {
   switch (blinkState) {
     case BlinkState::NONE:
-      pulseColor(WHITE, sharedPulseDimness);
+      pulseColor(COLOR_WHITE_25, sharedPulseDimness);
       break;
     case BlinkState::SOIL:
       setColor(COLOR_SOIL);
