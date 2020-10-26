@@ -23,7 +23,7 @@ void detectResetGame() {
   if (!isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_RESET_GAME_CLICKS) {
     setup();
     setValueSentOnAllFaces(Message::RESET_GAME);
-    returnl;
+    return;
   }
 
   FOREACH_FACE(f) {
