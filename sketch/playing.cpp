@@ -143,6 +143,8 @@ void playingNone() {
       // globally track our rear face position
       // rear - what the blink connects to / receives value from
       // head - empty and ready for broadcast / more connections
+      // NOTE: this only works in this else-block for reading / tracking one rear face at a time
+      // if the game requires to track multiple connection points, then this paradigm will need to change (array?)
       rearFace = f;
     }
 
@@ -151,7 +153,7 @@ void playingNone() {
       case Message::SETUP_TRUNK:
         blinkState = BlinkState::TRUNK;
         headFace = OPPOSITE_FACE(f);
-        break;
+        return;  // for now, only read one message from NONE state
       // setup branch message comes from other branches or the split trunk
       case Message::SETUP_BRANCH:
         blinkState = BlinkState::BRANCH;
@@ -159,7 +161,7 @@ void playingNone() {
 
         // determine where buds can go initially
         updateBudFaces();
-        break;
+        return;  // for now, only read one message from NONE state
       // a bud is looking for a leaf - so we become a leaf
       case Message::LOOKING_FOR_LEAF:
         blinkState = BlinkState::LEAF;
@@ -170,7 +172,7 @@ void playingNone() {
 
         // tell the branch, it got a leaf (rearFace is the leaf stem)
         setValueSentOnFace(Message::LOOKING_FOR_LEAF_ACK, rearFace);
-        break;
+        return;  // for now, only read one message from NONE state
       default:
         continue;
     }
