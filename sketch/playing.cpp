@@ -6,6 +6,7 @@
 
 // set to true if the growth path is split left/right
 bool isSplit;
+bool isSetupOver;
 
 // ---------------
 // --- growth ----
@@ -69,6 +70,7 @@ bool hasLeafFlashedGreeting;
 
 void initPlayVariables() {
   isSplit = false;
+  isSetupOver = false;
 
   receivingGrowth = false;
 
@@ -240,49 +242,47 @@ void playingTrunk() {
     headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
   }
 
-  // always send message to the rear
-  setValueSentOnFace(Message::SETUP_TRUNK, rearFace);  // tell the previous guy i'm a trunk
+  if (!isGameTimerStarted) {
+    // time to start!
+    if (rxRear == START_THE_CLOCK_NOW) {
+      gameTimer.set(GAME_TIMER_MS);
+      isGameTimerStarted = true;  // trunk's accounting
+      return;
+    }
 
-  if (isSplit) {
-    // if i'm a split trunk, i'm making branches
-    setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
-    setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
+    // always send message to the rear
+    setValueSentOnFace(Message::SETUP_TRUNK, rearFace);  // tell the previous guy i'm a trunk
+
+    if (isSplit) {
+      // if i'm a split trunk, i'm making branches
+      setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
+      setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
+    } else {
+      // tell the next guy i'm a trunk, so you will be too
+      setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+    }  // isSplit
   } else {
-    // tell the next guy i'm a trunk, so you will be too
-    setValueSentOnFace(Message::SETUP_TRUNK, headFace);
-  }
+    // isGameTimerStarted == true
+    switch (rxRear) {
+      case Message::GROW:
+        // we heard the grow message from the sprout
+        receivingGrowth = true;
 
-  if (!isGameTimerStarted && rxRear == START_THE_CLOCK_NOW) {
-    gameTimer.set(GAME_TIMER_MS);
-    isGameTimerStarted = true;  // trunk's accounting
-    return;
-  }
-
-  if (rxRear == Message::GROW) {
-    receivingGrowth = true;
-    if (isSplit) {
-      setValueSentOnFace(Message::GROW, headFaceLeft);
-      setValueSentOnFace(Message::GROW, headFaceRight);
-    } else {
-      setValueSentOnFace(Message::GROW, headFace);
+        // send GROW message along
+        if (isSplit) {
+          setValueSentOnFace(Message::GROW, headFaceLeft);
+          setValueSentOnFace(Message::GROW, headFaceRight);
+        } else {
+          setValueSentOnFace(Message::GROW, headFace);
+        }  // isSplit
+        return;
+      case Message::QUIET:
+        receivingGrowth = false;
+        setValueSentOnAllFaces(Message::QUIET);
+        return;
     }
-    return;
-  } else if (rxRear == Message::QUIET) {
-    receivingGrowth = false;
-    setValueSentOnAllFaces(Message::QUIET);
-    return;
-  }
-
-  if (isGameTimerStarted && gameTimer.isExpired()) {
-    if (isSplit) {
-      // game time reached the top - game over!
-      setValueSentOnAllFaces(Message::END_GAME);
-    } else {
-      // start the next timer in the next trunk segment
-      setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
-    }
-  }
-}
+  }  // isGameTimerStarted
+}  // playingTrunk
 
 void playingBranch() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
@@ -301,36 +301,39 @@ void playingBranch() {
     updateBudFaces();
   }
 
-  // always send message to the rear
-  setValueSentOnFace(Message::SETUP_BRANCH, rearFace);  // tell the previous guy i'm a trunk
-
-  if (isSplit) {
-    // if i'm a split branch, i'm making branches
-    setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
-    setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
-  } else {
-    // tell the next guy i'm a branch, so you will be too
-    setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+  if (!isSetupOver) {
+    if (isSplit) {
+      // if i'm a split branch, i'm making branches
+      setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
+      setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
+    } else {
+      // tell the next guy i'm a branch, so you will be too
+      setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+    }
   }
 
-  // received grow, so let's send it along
-  if (rxRear == Message::GROW) {
-    receivingGrowth = true;
-    if (isSplit) {
-      setValueSentOnFace(Message::GROW, headFaceLeft);
-      setValueSentOnFace(Message::GROW, headFaceRight);
-    } else {
-      setValueSentOnFace(Message::GROW, headFace);
-    }
+  switch (rxRear) {
+    case Message::GROW:
+      // received grow, so let's send it along
+      receivingGrowth = true;
+      if (isSplit) {
+        setValueSentOnFace(Message::GROW, headFaceLeft);
+        setValueSentOnFace(Message::GROW, headFaceRight);
+      } else {
+        setValueSentOnFace(Message::GROW, headFace);
+      }  // isSplit
 
-    // let's also figure out if we're going to bud
-    if (becomeBudCoinFlipTimer.isExpired()) {
-      branchState = BranchBudState::RANDOMIZING;
-    }
-  } else if (rxRear == Message::QUIET) {
-    receivingGrowth = false;
-    setValueSentOnAllFaces(Message::QUIET);
-    return;
+      // let's also figure out if we're going to bud
+      if (becomeBudCoinFlipTimer.isExpired()) {
+        branchState = BranchBudState::RANDOMIZING;
+      }
+      isSetupOver = true;
+      break;
+    case Message::QUIET:
+      receivingGrowth = false;
+      setValueSentOnAllFaces(Message::QUIET);
+      isSetupOver = true;
+      return;
   }
 
   switch (branchState) {
@@ -346,7 +349,7 @@ void playingBranch() {
       playingBud();
       break;
   }
-}
+}  //playingBranch
 
 void playingBud() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);

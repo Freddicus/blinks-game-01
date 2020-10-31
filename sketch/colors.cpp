@@ -31,12 +31,13 @@ void handlePlayingColors() {
     case BlinkState::SPROUT:
       // TODO: make sure sprout is doing some fun pulsing in the color routines
       // TODO: cool pulse when pressed to grow
+      setColor(COLOR_SOIL);
       setColorOnFace(COLOR_SPROUT, FACE_SPROUT);
       handleGrowthColor();
       break;
     case BlinkState::TRUNK:
       setColor(COLOR_TRUNK);
-      // TODO: temp for debugging
+#if DEBUG_COLORS == true
       setColorOnFace(CYAN, rearFace);
       if (isSplit) {
         setColorOnFace(CYAN, headFaceLeft);
@@ -44,11 +45,13 @@ void handlePlayingColors() {
       } else {
         setColorOnFace(CYAN, headFace);
       }
+#endif
       handleGrowthColor();
       handleGameTimerColor();
       break;
     case BlinkState::BRANCH:
       setColor(COLOR_TRUNK);
+#if DEBUG_COLORS == true
       setColorOnFace(CYAN, rearFace);
       if (isSplit) {
         setColorOnFace(CYAN, headFaceLeft);
@@ -56,6 +59,7 @@ void handlePlayingColors() {
       } else {
         setColorOnFace(CYAN, headFace);
       }
+#endif
       handleGrowthColor();
       handleBranchBudColor();
       break;
