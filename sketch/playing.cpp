@@ -6,7 +6,9 @@
 
 // set to true if the growth path is split left/right
 bool isSplit;
-bool isSetupOver;
+
+// set to true if the segment did something when the game timer expired
+bool hasExpiredGameTimerActed;
 
 // ---------------
 // --- growth ----
@@ -70,7 +72,6 @@ bool hasLeafFlashedGreeting;
 
 void initPlayVariables() {
   isSplit = false;
-  isSetupOver = false;
 
   receivingGrowth = false;
 
@@ -83,6 +84,7 @@ void initPlayVariables() {
   headFaceRight = -1;
 
   isGameTimerStarted = false;
+  hasExpiredGameTimerActed = false;
 
   activeBudFace = -1;
 
@@ -92,6 +94,7 @@ void initPlayVariables() {
   branchState = BranchBudState::NAB;
 
   soilTimer.set(0);
+  leafLifeTimer.set(0);
 }
 
 void gameStatePlaying() {
@@ -232,87 +235,99 @@ void playingTrunk() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
   bool isHeadClear = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
 
-  // if our head is not receiving anything, and we're double-clicked, then we split
-  if (buttonDoubleClicked() && isHeadClear) {
-    // allow undo - use not operator
-    isSplit = !isSplit;
-
-    // only calculate this once per loop when the change is made
-    headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : -1;
-    headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
+  // if the game was started AND the timer expired in this segment AND we haven't acted, yet
+  // then either pass the message along to start the next timer segment or end the game.
+  // this extra check is necessary so that expired trunk segments can still transmit GROW message
+  // in below switch statement on rxRear
+  if (isGameTimerStarted && !hasExpiredGameTimerActed && gameTimer.isExpired()) {
+    if (isSplit) {
+      // game time reached the top - game over!
+      setValueSentOnAllFaces(Message::END_GAME);
+    } else {
+      // start the next timer in the next trunk segment
+      setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
+    }
+    hasExpiredGameTimerActed = true;
+    return;
   }
 
-  if (!isGameTimerStarted) {
-    // time to start!
-    if (rxRear == START_THE_CLOCK_NOW) {
-      gameTimer.set(GAME_TIMER_MS);
-      isGameTimerStarted = true;  // trunk's accounting
+  switch (rxRear) {
+    case Message::SETUP_TRUNK:
+      // if our head is not receiving anything, and we're double-clicked, then we split
+      if (isHeadClear && buttonDoubleClicked()) {
+        // allow undo - use not operator
+        isSplit = !isSplit;
+
+        // only calculate this once per loop when the change is made
+        headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : -1;
+        headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
+      }
+
+      if (isSplit) {
+        // if i'm a split trunk, i'm making branches
+        setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
+        setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
+      } else {
+        // tell the next guy i'm a trunk, so you will be too
+        setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+      }  // isSplit
       return;
-    }
+    case Message::START_THE_CLOCK_NOW:
+      // time to start!
+      if (!isGameTimerStarted) {
+        gameTimer.set(GAME_TIMER_MS);
+        isGameTimerStarted = true;  // trunk's accounting
+      }
+      return;
+    case Message::GROW:
+      // we heard the grow message from the sprout
+      receivingGrowth = true;
 
-    // always send message to the rear
-    setValueSentOnFace(Message::SETUP_TRUNK, rearFace);  // tell the previous guy i'm a trunk
-
-    if (isSplit) {
-      // if i'm a split trunk, i'm making branches
-      setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
-      setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
-    } else {
-      // tell the next guy i'm a trunk, so you will be too
-      setValueSentOnFace(Message::SETUP_TRUNK, headFace);
-    }  // isSplit
-  } else {
-    // isGameTimerStarted == true
-    switch (rxRear) {
-      case Message::GROW:
-        // we heard the grow message from the sprout
-        receivingGrowth = true;
-
-        // send GROW message along
-        if (isSplit) {
-          setValueSentOnFace(Message::GROW, headFaceLeft);
-          setValueSentOnFace(Message::GROW, headFaceRight);
-        } else {
-          setValueSentOnFace(Message::GROW, headFace);
-        }  // isSplit
-        return;
-      case Message::QUIET:
-        receivingGrowth = false;
-        setValueSentOnAllFaces(Message::QUIET);
-        return;
-    }
-  }  // isGameTimerStarted
+      // send GROW message along
+      if (isSplit) {
+        setValueSentOnFace(Message::GROW, headFaceLeft);
+        setValueSentOnFace(Message::GROW, headFaceRight);
+      } else {
+        setValueSentOnFace(Message::GROW, headFace);
+      }  // isSplit
+      return;
+    case Message::QUIET:
+      receivingGrowth = false;
+      setValueSentOnAllFaces(Message::QUIET);
+      return;
+    default:
+      return;
+  }
 }  // playingTrunk
 
 void playingBranch() {
   byte rxRear = getLastValueReceivedOnFace(rearFace);
   bool isHeadClear = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
 
-  // if our head is not receiving anything, and we're double-clicked, then we split
-  if (buttonDoubleClicked() && isHeadClear) {
-    // allow undo - use not operator
-    isSplit = !isSplit;
-
-    // only calculate this once per loop when the change is made
-    headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : -1;
-    headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
-
-    // determine where buds can go after a split
-    updateBudFaces();
-  }
-
-  if (!isSetupOver) {
-    if (isSplit) {
-      // if i'm a split branch, i'm making branches
-      setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
-      setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
-    } else {
-      // tell the next guy i'm a branch, so you will be too
-      setValueSentOnFace(Message::SETUP_TRUNK, headFace);
-    }
-  }
-
   switch (rxRear) {
+    case Message::SETUP_BRANCH:
+      // if our head is not receiving anything, and we're double-clicked, then we split
+      if (isHeadClear && buttonDoubleClicked()) {
+        // allow undo - use not operator
+        isSplit = !isSplit;
+
+        // only calculate this once per loop when the change is made
+        headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : -1;
+        headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
+
+        // determine where buds can go after a split
+        updateBudFaces();
+      }
+
+      if (isSplit) {
+        // if i'm a split branch, i'm making branches
+        setValueSentOnFace(Message::SETUP_BRANCH, headFaceLeft);
+        setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
+      } else {
+        // tell the next guy i'm a branch, so you will be too
+        setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+      }
+      break;
     case Message::GROW:
       // received grow, so let's send it along
       receivingGrowth = true;
@@ -327,14 +342,12 @@ void playingBranch() {
       if (becomeBudCoinFlipTimer.isExpired()) {
         branchState = BranchBudState::RANDOMIZING;
       }
-      isSetupOver = true;
       break;
     case Message::QUIET:
       receivingGrowth = false;
       setValueSentOnAllFaces(Message::QUIET);
-      isSetupOver = true;
       return;
-  }
+  }  // switch (rxRear)
 
   switch (branchState) {
     case BranchBudState::DEAD_BRANCH:
@@ -348,7 +361,7 @@ void playingBranch() {
     default:
       playingBud();
       break;
-  }
+  }  // switch (branchState)
 }  //playingBranch
 
 void playingBud() {
