@@ -27,7 +27,7 @@ Timer soilTimer;
 // holds face indexes for potential buds
 byte budFaces[5];
 
-// the face that's actively budding or -1 if not budding
+// the face that's actively budding or NOT_SET if not budding
 byte activeBudFace;
 
 // track the current state of the branch / bud
@@ -66,7 +66,7 @@ bool hasLeafFlashedGreeting;
 
 // --- initialize ---
 
-// initializing unsigned 8-bit ints to -1 is a little sketchy, but shouldn't be a problem
+// initializing unsigned 8-bit ints to NOT_SET is a little sketchy, but shouldn't be a problem
 // it's effectively initializing them to 255, which doesn't have collision with
 // the current code's use cases
 
@@ -78,15 +78,15 @@ void initPlayVariables() {
   isLeafSignalTimerStarted = false;
   hasLeafFlashedGreeting = false;
 
-  rearFace = -1;
-  headFace = -1;
-  headFaceLeft = -1;
-  headFaceRight = -1;
+  rearFace = NOT_SET;
+  headFace = NOT_SET;
+  headFaceLeft = NOT_SET;
+  headFaceRight = NOT_SET;
 
   isGameTimerStarted = false;
   hasExpiredGameTimerActed = false;
 
-  activeBudFace = -1;
+  activeBudFace = NOT_SET;
 
   gameState = GameState::PLAYING;
   blinkState = BlinkState::NONE;
@@ -142,7 +142,7 @@ void playingNone() {
     if (curFaceValueExpired || curFaceValue == Message::QUIET) {
       // continue - nothing to read
       // also reset rearFace
-      rearFace = -1;
+      rearFace = NOT_SET;
       continue;
     } else {
       // globally track our rear face position
@@ -207,7 +207,7 @@ void playingSprout() {
   }
 
   // the program determines the head face orientation
-  if (headFace = -1) {
+  if (headFace == NOT_SET) {
     headFace = FACE_SPROUT;
     setValueSentOnFace(Message::SETUP_TRUNK, headFace);
     return;
@@ -259,8 +259,8 @@ void playingTrunk() {
         isSplit = !isSplit;
 
         // only calculate this once per loop when the change is made
-        headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : -1;
-        headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
+        headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : NOT_SET;
+        headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : NOT_SET;
       }
 
       if (isSplit) {
@@ -312,8 +312,8 @@ void playingBranch() {
         isSplit = !isSplit;
 
         // only calculate this once per loop when the change is made
-        headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : -1;
-        headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : -1;
+        headFaceLeft = isSplit ? CW_FROM_FACE(rearFace, 2) : NOT_SET;
+        headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : NOT_SET;
 
         // determine where buds can go after a split
         updateBudFaces();
@@ -365,12 +365,11 @@ void playingBranch() {
 }  //playingBranch
 
 void playingBud() {
-  byte rxRear = getLastValueReceivedOnFace(rearFace);
   bool isFinalBranch = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
 
   switch (branchState) {
     case BranchBudState::BUDDING:
-      if (activeBudFace == -1) {
+      if (activeBudFace == NOT_SET) {
         // reset leaf signal timer for current future leaves
         isLeafSignalTimerStarted = false;
         activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
@@ -379,7 +378,7 @@ void playingBud() {
       } else {
         if (activeBudSeekingLeafTimer.isExpired()) {
           setValueSentOnFace(Message::QUIET, activeBudFace);
-          activeBudFace = -1;
+          activeBudFace = NOT_SET;
           branchState = BranchBudState::TOO_LATE;
           tooLateCoolDownTimer.set(TOO_LATE_COOL_DOWN_MS);
         } else {

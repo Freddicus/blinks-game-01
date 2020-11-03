@@ -9,6 +9,7 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 #define CW_FROM_FACE(f, amt) faceOffsetArray[(f) + (amt)]
 #define CCW_FROM_FACE(f, amt) faceOffsetArray[6 + (f) - (amt)]
 #define OPPOSITE_FACE(f) CW_FROM_FACE((f), 3)
+#define NOT_SET 255
 
 // --- game values ---
 
