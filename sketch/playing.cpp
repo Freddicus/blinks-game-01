@@ -209,12 +209,17 @@ void playingSprout() {
   // the program determines the head face orientation
   if (headFace == NOT_SET) {
     headFace = FACE_SPROUT;
+    rearFace = OPPOSITE_FACE(headFace);
     setValueSentOnFace(Message::SETUP_TRUNK, headFace);
     return;
   }
 
   // long press to start the game
   if (!isGameTimerStarted && buttonLongPressed()) {
+#if DEBUG_COLORS == true
+    // indicate long press occurred (sanity)
+    setColorOnFace(MAGENTA, rearFace);
+#endif
     setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     isGameTimerStarted = true;  // sprout's accounting
     return;
