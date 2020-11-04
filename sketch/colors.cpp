@@ -32,7 +32,10 @@ void handlePlayingColors() {
       // TODO: make sure sprout is doing some fun pulsing in the color routines
       // TODO: cool pulse when pressed to grow
       setColor(COLOR_SOIL);
-      setColorOnFace(COLOR_SPROUT, FACE_SPROUT);
+      setColorOnFace(COLOR_SPROUT, headFace);
+      if (isGameTimerStarted) {
+        pulseColor(COLOR_SPROUT, sharedPulseDimness);
+      }
       handleGrowthColor();
       break;
     case BlinkState::TRUNK:
