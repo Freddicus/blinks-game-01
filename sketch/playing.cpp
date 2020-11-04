@@ -229,12 +229,12 @@ void playingSprout() {
   if (isGameTimerStarted) {
     if (buttonSingleClicked()) {
       sendGrowthTimer.set(GROWTH_DELAY_MS);
-      setValueSentOnFace(Message::GROW, headFace);
-      return;
     }
 
     if (sendGrowthTimer.isExpired()) {
       setValueSentOnFace(Message::QUIET, headFace);
+    } else {
+      setValueSentOnFace(Message::GROW, headFace);
     }
   }
 }

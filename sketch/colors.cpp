@@ -26,7 +26,7 @@ void handlePlayingColors() {
       pulseColor(COLOR_WHITE_25, sharedPulseDimness);
       break;
     case BlinkState::SOIL:
-      setColor(COLOR_SOIL);
+      handleSoilColor();
       break;
     case BlinkState::SPROUT:
       // TODO: make sure sprout is doing some fun pulsing in the color routines
@@ -68,7 +68,7 @@ void handlePlayingColors() {
 
 void handleSoilColor() {
   if (!soilTimer.isExpired()) {
-    spinColor(COLOR_SOIL, 250);
+    spinColor(COLOR_SOIL, SPIN_SPEED_FAST_MS);
   }
 }
 
