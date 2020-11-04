@@ -17,6 +17,9 @@ bool hasExpiredGameTimerActed;
 // set to true when rear face is getting GROW message
 bool receivingGrowth;
 
+// lets the grow message send for more than an instant
+Timer sendGrowthTimer;
+
 // used briefly to countdown the transition from soil to sprout
 Timer soilTimer;
 
@@ -225,10 +228,14 @@ void playingSprout() {
   // once growth hits branches, it should possibly grow leaves
   if (isGameTimerStarted) {
     if (buttonSingleClicked()) {
+      sendGrowthTimer.set(GROWTH_DELAY_MS);
       setValueSentOnFace(Message::GROW, headFace);
       return;
     }
-    setValueSentOnFace(Message::QUIET, headFace);
+
+    if (sendGrowthTimer.isExpired()) {
+      setValueSentOnFace(Message::QUIET, headFace);
+    }
   }
 }
 
@@ -281,16 +288,7 @@ void playingTrunk() {
       }
       return;
     case Message::GROW:
-      // we heard the grow message from the sprout
-      receivingGrowth = true;
-
-      // send GROW message along
-      if (isSplit) {
-        setValueSentOnFace(Message::GROW, headFaceLeft);
-        setValueSentOnFace(Message::GROW, headFaceRight);
-      } else {
-        setValueSentOnFace(Message::GROW, headFace);
-      }  // isSplit
+      handleGrowth();
       return;
     case Message::QUIET:
       receivingGrowth = false;
@@ -330,15 +328,7 @@ void playingBranch() {
       }
       break;
     case Message::GROW:
-      // received grow, so let's send it along
-      receivingGrowth = true;
-      if (isSplit) {
-        setValueSentOnFace(Message::GROW, headFaceLeft);
-        setValueSentOnFace(Message::GROW, headFaceRight);
-      } else {
-        setValueSentOnFace(Message::GROW, headFace);
-      }  // isSplit
-
+      handleGrowth();
       // let's also figure out if we're going to bud
       if (becomeBudCoinFlipTimer.isExpired()) {
         branchState = BranchBudState::RANDOMIZING;
@@ -456,9 +446,17 @@ void playingLeaf() {
 
 // ----- Game Helpers ------
 
-void sendSplitGrowth() {
-  setValueSentOnFace(Message::GROW, headFaceLeft);
-  setValueSentOnFace(Message::GROW, headFaceRight);
+void handleGrowth() {
+  // we heard the grow message
+  receivingGrowth = true;
+
+  // send GROW message along
+  if (isSplit) {
+    setValueSentOnFace(Message::GROW, headFaceLeft);
+    setValueSentOnFace(Message::GROW, headFaceRight);
+  } else {
+    setValueSentOnFace(Message::GROW, headFace);
+  }  // isSplit
 }
 
 void updateBudFaces() {

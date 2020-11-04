@@ -36,6 +36,7 @@ void handlePlayingColors() {
       handleGrowthColor();
       break;
     case BlinkState::TRUNK:
+      pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
       if (isSplit) {
         pulseColorOnFace(COLOR_TRUNK, headFaceLeft, sharedPulseDimness);
         pulseColorOnFace(COLOR_TRUNK, headFaceRight, sharedPulseDimness);
@@ -46,6 +47,7 @@ void handlePlayingColors() {
       handleGameTimerColor();
       break;
     case BlinkState::BRANCH:
+      pulseColorOnFace(COLOR_BRANCH, rearFace, sharedPulseDimness);
       if (isSplit) {
         pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
         pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
