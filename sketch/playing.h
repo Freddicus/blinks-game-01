@@ -45,6 +45,7 @@ void playingLeaf();
 
 // ----- Game Helpers ------
 
+void handleGrowth();
 void updateBudFaces();
 void randomizeBudAffinity();
 
