@@ -216,10 +216,6 @@ void playingSprout() {
 
   // long press to start the game
   if (!isGameTimerStarted && buttonLongPressed()) {
-#if DEBUG_COLORS == true
-    // indicate long press occurred (sanity)
-    setColorOnFace(MAGENTA, rearFace);
-#endif
     setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     isGameTimerStarted = true;  // sprout's accounting
     return;

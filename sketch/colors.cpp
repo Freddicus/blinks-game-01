@@ -36,30 +36,22 @@ void handlePlayingColors() {
       handleGrowthColor();
       break;
     case BlinkState::TRUNK:
-      setColor(COLOR_TRUNK);
-#if DEBUG_COLORS == true
-      setColorOnFace(CYAN, rearFace);
       if (isSplit) {
-        setColorOnFace(CYAN, headFaceLeft);
-        setColorOnFace(CYAN, headFaceRight);
+        pulseColorOnFace(COLOR_TRUNK, headFaceLeft, sharedPulseDimness);
+        pulseColorOnFace(COLOR_TRUNK, headFaceRight, sharedPulseDimness);
       } else {
-        setColorOnFace(CYAN, headFace);
+        pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
       }
-#endif
       handleGrowthColor();
       handleGameTimerColor();
       break;
     case BlinkState::BRANCH:
-      setColor(COLOR_TRUNK);
-#if DEBUG_COLORS == true
-      setColorOnFace(CYAN, rearFace);
       if (isSplit) {
-        setColorOnFace(CYAN, headFaceLeft);
-        setColorOnFace(CYAN, headFaceRight);
+        pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
+        pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
       } else {
-        setColorOnFace(CYAN, headFace);
+        pulseColorOnFace(COLOR_BRANCH, headFace, sharedPulseDimness);
       }
-#endif
       handleGrowthColor();
       handleBranchBudColor();
       break;
@@ -102,7 +94,7 @@ void handleGameTimerColor() {
 void handleBranchBudColor() {
   switch (branchState) {
     case BranchBudState::NAB:
-      setColor(COLOR_BRANCH);
+      // don't override potential growth color
       break;
     case BranchBudState::RANDOMIZING:
       sparkle();

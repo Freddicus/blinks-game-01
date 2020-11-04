@@ -8,8 +8,6 @@
  * Discussion: https://forum.move38.com/t/new-game-wip-make-like-a-tree-and-leaf/549
  */
 
-#define DEBUG_COLORS false
-
 #include <blinklib.h>
 
 #include "colors.h"
