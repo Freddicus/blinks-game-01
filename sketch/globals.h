@@ -52,6 +52,4 @@ extern bool isGameTimerStarted;
 
 extern bool gotSetupMsg;
 
-extern void setup();
-
 #endif
