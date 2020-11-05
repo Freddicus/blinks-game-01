@@ -73,6 +73,8 @@ void initPlayVariables() {
   isLeafSignalTimerStarted = false;
   hasLeafFlashedGreeting = false;
 
+  isGameStarted = false;
+
   rearFace = NOT_SET;
   headFace = NOT_SET;
   headFaceLeft = NOT_SET;
@@ -134,7 +136,7 @@ void playingNone() {
   FOREACH_FACE(f) {
     byte curFaceValue = getLastValueReceivedOnFace(f);
     bool curFaceValueExpired = isValueReceivedOnFaceExpired(f);
-    if (curFaceValueExpired || curFaceValue == Message::QUIET) {
+    if (curFaceValueExpired) {
       // continue - nothing to read
       // also reset rearFace
       rearFace = NOT_SET;
@@ -183,7 +185,7 @@ void playingNone() {
 // we'll animate something here
 void playingSoil() {
   // allow undo switch to soil
-  if (buttonDoubleClicked() && isAlone()) {
+  if (isAlone() && buttonDoubleClicked()) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -211,6 +213,12 @@ void playingSprout() {
 
   // long press to start the game
   if (!isGameTimerStarted && buttonLongPressed()) {
+    isGameStarted = true;
+    setValueSentOnFace(Message::START_THE_GAME, headFace);
+    return;
+  }
+
+  if (!isGameTimerStarted && isGameStarted) {
     setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     isGameTimerStarted = true;  // sprout's accounting
     return;
@@ -258,15 +266,21 @@ void playingTrunk() {
         setValueSentOnFace(Message::SETUP_TRUNK, headFace);
       }  // isSplit
       return;
+    case Message::START_THE_GAME:
+      isGameStarted = true;
+      if (isSplit) {
+        setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
+        setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
+      } else {
+        setValueSentOnFace(Message::START_THE_GAME, headFace);
+      }  // isSplit
+      break;
     case Message::START_THE_CLOCK_NOW:
       // time to start!
       if (!isGameTimerStarted) {
         gameTimer.set(GAME_TIMER_MS);
         isGameTimerStarted = true;  // trunk's accounting
       }
-      return;
-    case Message::QUIET:
-      // setValueSentOnAllFaces(Message::QUIET);
       return;
     default:
       return;
@@ -301,9 +315,17 @@ void playingBranch() {
         setValueSentOnFace(Message::SETUP_TRUNK, headFace);
       }
       break;
-    case Message::QUIET:
-      // setValueSentOnAllFaces(Message::QUIET);
-      return;
+    case Message::START_THE_GAME:
+      isGameStarted = true;
+      if (isSplit) {
+        setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
+        setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
+      } else {
+        setValueSentOnFace(Message::START_THE_GAME, headFace);
+      }  // isSplit
+      break;
+    default:
+      break;
   }  // switch (rxRear)
 
   switch (branchState) {
@@ -411,6 +433,15 @@ void playingLeaf() {
 }
 
 // ----- Game Helpers ------
+
+void sendMessageUp(byte msg) {
+  if (isSplit) {
+    setValueSentOnFace(msg, headFaceLeft);
+    setValueSentOnFace(msg, headFaceRight);
+  } else {
+    setValueSentOnFace(msg, headFace);
+  }  // isSplit
+}
 
 void updateBudFaces() {
   if (isSplit) {

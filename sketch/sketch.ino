@@ -28,8 +28,9 @@ byte headFaceRight;
 
 byte sharedPulseDimness;
 
-Timer gameTimer;
+bool isGameStarted;
 bool isGameTimerStarted;
+Timer gameTimer;
 
 void setup() {
   randomize();

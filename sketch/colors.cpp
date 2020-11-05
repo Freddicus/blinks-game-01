@@ -23,37 +23,42 @@ void handleGameOverColors() {
 void handlePlayingColors() {
   switch (blinkState) {
     case BlinkState::NONE:
-      pulseColor(COLOR_WHITE_25, sharedPulseDimness);
+      pulseColor(COLOR_WHITE_50, sharedPulseDimness);
       break;
     case BlinkState::SOIL:
       handleSoilColor();
       break;
     case BlinkState::SPROUT:
-      // TODO: make sure sprout is doing some fun pulsing in the color routines
-      // TODO: cool pulse when pressed to grow
-      setColor(COLOR_SOIL);
       setColorOnFace(COLOR_SPROUT, headFace);
       if (isGameTimerStarted) {
-        pulseColor(COLOR_SPROUT, sharedPulseDimness);
+        setColor(COLOR_SPROUT);
       }
       break;
     case BlinkState::TRUNK:
-      pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
-      if (isSplit) {
-        pulseColorOnFace(COLOR_TRUNK, headFaceLeft, sharedPulseDimness);
-        pulseColorOnFace(COLOR_TRUNK, headFaceRight, sharedPulseDimness);
+      if (!isGameStarted) {
+        pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
+        if (isSplit) {
+          pulseColorOnFace(COLOR_TRUNK, headFaceLeft, sharedPulseDimness);
+          pulseColorOnFace(COLOR_TRUNK, headFaceRight, sharedPulseDimness);
+        } else {
+          pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
+        }
       } else {
-        pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
+        setColor(COLOR_TRUNK);
       }
       handleGameTimerColor();
       break;
     case BlinkState::BRANCH:
-      pulseColorOnFace(COLOR_BRANCH, rearFace, sharedPulseDimness);
-      if (isSplit) {
-        pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
-        pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
+      if (!isGameStarted) {
+        pulseColorOnFace(COLOR_BRANCH, rearFace, sharedPulseDimness);
+        if (isSplit) {
+          pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
+          pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
+        } else {
+          pulseColorOnFace(COLOR_BRANCH, headFace, sharedPulseDimness);
+        }
       } else {
-        pulseColorOnFace(COLOR_BRANCH, headFace, sharedPulseDimness);
+        setColor(COLOR_BRANCH);
       }
       handleBranchBudColor();
       break;
