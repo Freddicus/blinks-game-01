@@ -61,6 +61,10 @@ byte leafState;
 
 bool hasLeafFlashedGreeting;
 
+// --- misc ---
+
+Timer messageSpacer;
+
 // --- initialize ---
 
 // initializing unsigned 8-bit ints to NOT_SET is a little sketchy, but shouldn't be a problem
@@ -213,12 +217,13 @@ void playingSprout() {
 
   // long press to start the game
   if (!isGameTimerStarted && buttonLongPressed()) {
-    isGameStarted = true;
+    isGameStarted = true;  // sprout's accounting
     setValueSentOnFace(Message::START_THE_GAME, headFace);
+    messageSpacer.set(500);
     return;
   }
 
-  if (!isGameTimerStarted && isGameStarted) {
+  if (!isGameTimerStarted && isGameStarted && messageSpacer.isExpired()) {
     setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     isGameTimerStarted = true;  // sprout's accounting
     return;
@@ -267,14 +272,14 @@ void playingTrunk() {
       }  // isSplit
       return;
     case Message::START_THE_GAME:
-      isGameStarted = true;
+      isGameStarted = true;  // trunk's accounting
       if (isSplit) {
         setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
         setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
       } else {
         setValueSentOnFace(Message::START_THE_GAME, headFace);
       }  // isSplit
-      break;
+      return;
     case Message::START_THE_CLOCK_NOW:
       // time to start!
       if (!isGameTimerStarted) {
@@ -312,17 +317,20 @@ void playingBranch() {
         setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
       } else {
         // tell the next guy i'm a branch, so you will be too
-        setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+        setValueSentOnFace(Message::SETUP_BRANCH, headFace);
       }
       break;
     case Message::START_THE_GAME:
-      isGameStarted = true;
+      isGameStarted = true;  // branch's accounting (not used)
       if (isSplit) {
         setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
         setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
       } else {
         setValueSentOnFace(Message::START_THE_GAME, headFace);
       }  // isSplit
+
+      // start randomize immediately
+      branchState = BranchBudState::RANDOMIZING;
       break;
     default:
       break;
@@ -433,15 +441,6 @@ void playingLeaf() {
 }
 
 // ----- Game Helpers ------
-
-void sendMessageUp(byte msg) {
-  if (isSplit) {
-    setValueSentOnFace(msg, headFaceLeft);
-    setValueSentOnFace(msg, headFaceRight);
-  } else {
-    setValueSentOnFace(msg, headFace);
-  }  // isSplit
-}
 
 void updateBudFaces() {
   if (isSplit) {
