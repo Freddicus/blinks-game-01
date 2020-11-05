@@ -1,7 +1,7 @@
 #include "util.h"
+
 #include "playing.h"
 
-Timer resetGameTimer;
 bool didResetGame = false;
 
 bool flipCoin() {
@@ -25,11 +25,10 @@ void updateSharedPulseDimness() {
 
 void detectResetGame() {
   // detect the initiator of game reset
-  if (!isAlone() && buttonMultiClicked() && buttonClickCount() == NUM_RESET_GAME_CLICKS) {
+  if (buttonMultiClicked() && buttonClickCount() == NUM_RESET_GAME_CLICKS) {
     initPlayVariables();
     setValueSentOnAllFaces(Message::RESET_GAME);
     didResetGame = true;
-    resetGameTimer.set(1000);
     return;
   }
 
@@ -39,12 +38,11 @@ void detectResetGame() {
       initPlayVariables();
       setValueSentOnAllFaces(Message::RESET_GAME);
       didResetGame = true;
-      resetGameTimer.set(1000);
       return;
     }
   }
 
-  if (didResetGame && resetGameTimer.isExpired()) {
+  if (didResetGame) {
     didResetGame = false;
     setValueSentOnAllFaces(Message::QUIET);
   }

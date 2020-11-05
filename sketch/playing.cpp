@@ -1,5 +1,12 @@
 #include "playing.h"
 
+// --------------
+// ---- soil ----
+// --------------
+
+// used briefly to countdown the transition from soil to sprout
+Timer soilTimer;
+
 // ------------------------
 // ---- trunk / branch ----
 // ------------------------
@@ -9,19 +16,6 @@ bool isSplit;
 
 // set to true if the segment did something when the game timer expired
 bool hasExpiredGameTimerActed;
-
-// ---------------
-// --- growth ----
-// ---------------
-
-// set to true when rear face is getting GROW message
-bool receivingGrowth;
-
-// lets the grow message send for more than an instant
-Timer sendGrowthTimer;
-
-// used briefly to countdown the transition from soil to sprout
-Timer soilTimer;
 
 // ---------------------------
 // ---- branch / bud play ----
@@ -67,6 +61,10 @@ byte leafState;
 
 bool hasLeafFlashedGreeting;
 
+// --- misc ---
+
+Timer messageSpacer;
+
 // --- initialize ---
 
 // initializing unsigned 8-bit ints to NOT_SET is a little sketchy, but shouldn't be a problem
@@ -76,10 +74,10 @@ bool hasLeafFlashedGreeting;
 void initPlayVariables() {
   isSplit = false;
 
-  receivingGrowth = false;
-
   isLeafSignalTimerStarted = false;
   hasLeafFlashedGreeting = false;
+
+  isGameStarted = false;
 
   rearFace = NOT_SET;
   headFace = NOT_SET;
@@ -142,7 +140,7 @@ void playingNone() {
   FOREACH_FACE(f) {
     byte curFaceValue = getLastValueReceivedOnFace(f);
     bool curFaceValueExpired = isValueReceivedOnFaceExpired(f);
-    if (curFaceValueExpired || curFaceValue == Message::QUIET) {
+    if (curFaceValueExpired) {
       // continue - nothing to read
       // also reset rearFace
       rearFace = NOT_SET;
@@ -191,7 +189,7 @@ void playingNone() {
 // we'll animate something here
 void playingSoil() {
   // allow undo switch to soil
-  if (buttonDoubleClicked() && isAlone()) {
+  if (isAlone() && buttonDoubleClicked()) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -201,7 +199,7 @@ void playingSoil() {
   }
 }
 
-// starts the game timer and initiates growth up the tree with single clicks
+// starts the game timer
 void playingSprout() {
   // allow undo sprout for overzealous players
   if (!isGameTimerStarted && isAlone() && buttonDoubleClicked()) {
@@ -219,23 +217,16 @@ void playingSprout() {
 
   // long press to start the game
   if (!isGameTimerStarted && buttonLongPressed()) {
-    setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
-    isGameTimerStarted = true;  // sprout's accounting
+    isGameStarted = true;  // sprout's accounting
+    setValueSentOnFace(Message::START_THE_GAME, headFace);
+    messageSpacer.set(500);
     return;
   }
 
-  // initiate growth cycle from the sprout
-  // once growth hits branches, it should possibly grow leaves
-  if (isGameTimerStarted) {
-    if (buttonSingleClicked()) {
-      sendGrowthTimer.set(GROWTH_DELAY_MS);
-    }
-
-    if (sendGrowthTimer.isExpired()) {
-      setValueSentOnFace(Message::QUIET, headFace);
-    } else {
-      setValueSentOnFace(Message::GROW, headFace);
-    }
+  if (!isGameTimerStarted && isGameStarted && messageSpacer.isExpired()) {
+    setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
+    isGameTimerStarted = true;  // sprout's accounting
+    return;
   }
 }
 
@@ -245,7 +236,7 @@ void playingTrunk() {
 
   // if the game was started AND the timer expired in this segment AND we haven't acted, yet
   // then either pass the message along to start the next timer segment or end the game.
-  // this extra check is necessary so that expired trunk segments can still transmit GROW message
+  // this extra check is necessary so that expired trunk segments can still transmit message
   // in below switch statement on rxRear
   if (isGameTimerStarted && !hasExpiredGameTimerActed && gameTimer.isExpired()) {
     if (isSplit) {
@@ -280,19 +271,21 @@ void playingTrunk() {
         setValueSentOnFace(Message::SETUP_TRUNK, headFace);
       }  // isSplit
       return;
+    case Message::START_THE_GAME:
+      isGameStarted = true;  // trunk's accounting
+      if (isSplit) {
+        setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
+        setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
+      } else {
+        setValueSentOnFace(Message::START_THE_GAME, headFace);
+      }  // isSplit
+      return;
     case Message::START_THE_CLOCK_NOW:
       // time to start!
       if (!isGameTimerStarted) {
         gameTimer.set(GAME_TIMER_MS);
         isGameTimerStarted = true;  // trunk's accounting
       }
-      return;
-    case Message::GROW:
-      handleGrowth();
-      return;
-    case Message::QUIET:
-      receivingGrowth = false;
-      setValueSentOnAllFaces(Message::QUIET);
       return;
     default:
       return;
@@ -324,20 +317,23 @@ void playingBranch() {
         setValueSentOnFace(Message::SETUP_BRANCH, headFaceRight);
       } else {
         // tell the next guy i'm a branch, so you will be too
-        setValueSentOnFace(Message::SETUP_TRUNK, headFace);
+        setValueSentOnFace(Message::SETUP_BRANCH, headFace);
       }
       break;
-    case Message::GROW:
-      handleGrowth();
-      // let's also figure out if we're going to bud
-      if (becomeBudCoinFlipTimer.isExpired()) {
-        branchState = BranchBudState::RANDOMIZING;
-      }
+    case Message::START_THE_GAME:
+      isGameStarted = true;  // branch's accounting (not used)
+      if (isSplit) {
+        setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
+        setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
+      } else {
+        setValueSentOnFace(Message::START_THE_GAME, headFace);
+      }  // isSplit
+
+      // start randomize immediately
+      branchState = BranchBudState::RANDOMIZING;
       break;
-    case Message::QUIET:
-      receivingGrowth = false;
-      setValueSentOnAllFaces(Message::QUIET);
-      return;
+    default:
+      break;
   }  // switch (rxRear)
 
   switch (branchState) {
@@ -446,19 +442,6 @@ void playingLeaf() {
 
 // ----- Game Helpers ------
 
-void handleGrowth() {
-  // we heard the grow message
-  receivingGrowth = true;
-
-  // send GROW message along
-  if (isSplit) {
-    setValueSentOnFace(Message::GROW, headFaceLeft);
-    setValueSentOnFace(Message::GROW, headFaceRight);
-  } else {
-    setValueSentOnFace(Message::GROW, headFace);
-  }  // isSplit
-}
-
 void updateBudFaces() {
   if (isSplit) {
     budFaces[0] = CW_FROM_FACE(headFace, 1);
@@ -476,7 +459,7 @@ void updateBudFaces() {
 }
 
 void randomizeBudAffinity() {
-  bool becomeBud = flipCoin() & flipCoin();
+  bool becomeBud = flipCoin();
 
   // should i be a bud?
   if (becomeBud) {
