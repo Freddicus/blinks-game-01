@@ -36,7 +36,6 @@ void handlePlayingColors() {
       if (isGameTimerStarted) {
         pulseColor(COLOR_SPROUT, sharedPulseDimness);
       }
-      handleGrowthColor();
       break;
     case BlinkState::TRUNK:
       pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
@@ -46,7 +45,6 @@ void handlePlayingColors() {
       } else {
         pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
       }
-      handleGrowthColor();
       handleGameTimerColor();
       break;
     case BlinkState::BRANCH:
@@ -57,7 +55,6 @@ void handlePlayingColors() {
       } else {
         pulseColorOnFace(COLOR_BRANCH, headFace, sharedPulseDimness);
       }
-      handleGrowthColor();
       handleBranchBudColor();
       break;
     case BlinkState::BUD:
@@ -72,21 +69,6 @@ void handlePlayingColors() {
 void handleSoilColor() {
   if (!soilTimer.isExpired()) {
     spinColor(COLOR_SOIL, SPIN_SPEED_FAST_MS);
-  }
-}
-
-void handleGrowthColor() {
-  if (receivingGrowth) {
-    // pulse that i'm receiving growth
-    pulseColorOnFace(COLOR_GROWTH, rearFace, sharedPulseDimness);
-
-    // if receiving growth, then i'm sending it too, so pulse head
-    if (isSplit) {
-      pulseColorOnFace(COLOR_GROWTH, headFaceLeft, sharedPulseDimness);
-      pulseColorOnFace(COLOR_GROWTH, headFaceRight, sharedPulseDimness);
-    } else {
-      pulseColorOnFace(COLOR_GROWTH, headFace, sharedPulseDimness);
-    }
   }
 }
 

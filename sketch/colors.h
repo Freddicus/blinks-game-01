@@ -29,10 +29,8 @@ void updateColors();
 void handlePlayingColors();
 void handleGameOverColors();
 void handleSoilColor();
-void handleGrowthColor();
 void handleGameTimerColor();
 void handleBranchBudColor();
-void handleGrowthColor();
 void handleLeafColor();
 
 void pulseColor(Color color, byte pulseDimness);
