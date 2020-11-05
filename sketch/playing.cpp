@@ -476,7 +476,7 @@ void updateBudFaces() {
 }
 
 void randomizeBudAffinity() {
-  bool becomeBud = flipCoin() & flipCoin();
+  bool becomeBud = flipCoin();
 
   // should i be a bud?
   if (becomeBud) {
