@@ -90,7 +90,9 @@ void handleBranchColor() {
       break;
     case BranchState::GREW_A_LEAF:
       // eventually different colors here
-      setColorOnFace(GREEN, activeLeafFace);
+      if (activeLeafFace != NOT_SET) {
+        setColorOnFace(GREEN, activeLeafFace);
+      }
       break;
   }
 }

@@ -18,20 +18,15 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 #define FACE_SPROUT 0
 
 #define PULSE_LENGTH_MS 2000
-#define GROWTH_DELAY_MS 1250
-#define GROWTH_COOLDOWN_MS 1250
-#define BECOME_BUD_COIN_FLIP_COOLDOWN_MS 2000
-#define ASK_FOR_LEAF_MAX_TIME_MS 10000
-#define ASK_FOR_LEAF_MIN_TIME_MS 5000
-#define TOO_LATE_COOL_DOWN_MS 4000
+#define BECOME_BUD_COIN_FLIP_COOLDOWN_MS 1500
+#define ASK_FOR_LEAF_MAX_TIME_MS 3000
+#define ASK_FOR_LEAF_MIN_TIME_MS 1000
 #define GAME_TIMER_MS 45000
 #define SPIN_SPEED_FAST_MS 250
 #define SPIN_SPEED_MEDIUM_MS 500  // tick-tock
 #define SPIN_SPEED_SLOW_MS 1000
 
 #define SOIL_PLAY_TIME_MS 2000
-#define LEAF_PLAY_TIME_MIN_MS 500
-#define LEAF_PLAY_TIME_MAX_MS 2000
 
 // -------- global variables --------
 

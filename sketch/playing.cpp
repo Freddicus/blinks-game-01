@@ -341,6 +341,7 @@ void playingBranchWithLeaf() {
     if (leafTimer.isExpired()) {
       setValueSentOnFace(Message::QUIET, activeLeafFace);
       activeLeafFace = NOT_SET;
+      branchState = BranchState::RANDOMIZING;
     }
   }
 }
@@ -371,13 +372,13 @@ void randomizeLeafGrowing() {
     return;
   }
 
-  bool becomeBud = flipCoin();
+  bool growLeaf = flipCoin();
 
-  // should i be a bud?
-  if (becomeBud) {
+  // should i grow a leaf?
+  if (growLeaf) {
     branchState = BranchState::GREW_A_LEAF;
   } else {
     growLeafCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
-    branchState = BranchState::NAB;
+    branchState = BranchState::RANDOMIZING;
   }
 }

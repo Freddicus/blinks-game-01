@@ -34,7 +34,7 @@ void detectResetGame() {
 
   // detect propagation of game reset
   FOREACH_FACE(f) {
-    if (!isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f) == Message::RESET_GAME) {
+    if (didResetGame == false && !isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f) == Message::RESET_GAME) {
       initPlayVariables();
       setValueSentOnAllFaces(Message::RESET_GAME);
       didResetGame = true;
