@@ -38,8 +38,8 @@ void handlePlayingColors() {
       if (!isGameStarted) {
         pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
         if (isSplit) {
-          pulseColorOnFace(COLOR_TRUNK, headFaceLeft, sharedPulseDimness);
-          pulseColorOnFace(COLOR_TRUNK, headFaceRight, sharedPulseDimness);
+          pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
+          pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
         } else {
           pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
         }
@@ -86,15 +86,17 @@ void handleBranchColor() {
       // don't override potential growth color
       break;
     case BranchState::RANDOMIZING:
-      sparkle();
+      // sparkle();
       break;
     case BranchState::GREW_A_LEAF:
-      pulseColorOnFace(COLOR_BUD, activeLeafFace, sharedPulseDimness);
+      // eventually different colors here
+      setColorOnFace(GREEN, activeLeafFace);
       break;
   }
 }
 
 void handleCollectorColor() {
+  setColor(GREEN);
 }
 
 void pulseColor(Color color, byte pulseDimness) {

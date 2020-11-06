@@ -108,10 +108,16 @@ void gameStatePlaying() {
 // -------- Playing methods -------
 
 void playingNone() {
-  // double click turns blink into soil
-  if (isAlone() && buttonDoubleClicked()) {
+  // long press turns blink into soil
+  if (isAlone() && buttonLongPressed()) {
     blinkState = BlinkState::SOIL;
     soilTimer.set(SOIL_PLAY_TIME_MS);
+    return;
+  }
+
+  // double click into collector
+  if (isAlone() && buttonDoubleClicked()) {
+    blinkState = BlinkState::COLLECTOR;
     return;
   }
 
@@ -291,16 +297,18 @@ void playingBranch() {
       }
       break;
     case Message::START_THE_GAME:
-      isGameStarted = true;  // branch's accounting (not used)
-      if (isSplit) {
-        setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
-        setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
-      } else {
-        setValueSentOnFace(Message::START_THE_GAME, headFace);
-      }  // isSplit
+      if (isGameStarted == false) {
+        isGameStarted = true;  // branch's accounting (not used)
+        if (isSplit) {
+          setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
+          setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
+        } else {
+          setValueSentOnFace(Message::START_THE_GAME, headFace);
+        }  // isSplit
 
-      // start randomize immediately
-      branchState = BranchState::RANDOMIZING;
+        // start randomize immediately
+        branchState = BranchState::RANDOMIZING;
+      }
       break;
     default:
       break;

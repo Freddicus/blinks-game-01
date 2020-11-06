@@ -5,7 +5,7 @@
 bool didResetGame = false;
 
 bool flipCoin() {
-  return random(1);
+  return random(100) >= 50;
 }
 
 word random(word min, word max) {
@@ -25,7 +25,7 @@ void updateSharedPulseDimness() {
 
 void detectResetGame() {
   // detect the initiator of game reset
-  if (buttonMultiClicked() && buttonClickCount() == NUM_RESET_GAME_CLICKS) {
+  if (!isAlone() && buttonLongPressed()) {
     initPlayVariables();
     setValueSentOnAllFaces(Message::RESET_GAME);
     didResetGame = true;
