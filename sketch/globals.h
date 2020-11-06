@@ -47,8 +47,9 @@ extern byte headFaceRight;
 
 extern byte sharedPulseDimness;
 
-extern Timer gameTimer;
+extern bool isGameStarted;
 extern bool isGameTimerStarted;
+extern Timer gameTimer;
 
 extern bool gotSetupMsg;
 

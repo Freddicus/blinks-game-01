@@ -11,9 +11,7 @@
 
 extern bool isSplit;
 
-// --- growth ----
-
-extern bool receivingGrowth;
+// --- soil ----
 
 extern Timer soilTimer;
 
@@ -45,7 +43,6 @@ void playingLeaf();
 
 // ----- Game Helpers ------
 
-void handleGrowth();
 void updateBudFaces();
 void randomizeBudAffinity();
 
