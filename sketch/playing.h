@@ -17,13 +17,10 @@ extern Timer soilTimer;
 
 // ---- branch / bud play ----
 
-extern byte activeBudFace;
+extern byte activeLeafFace;
 extern byte branchState;
 
 // ---- leaf play ----
-
-extern byte leafState;
-extern bool hasLeafFlashedGreeting;
 
 // ---- setup methods ----
 
@@ -37,13 +34,12 @@ void playingSoil();
 void playingSprout();
 void playingTrunk();
 void playingBranch();
-void playingBud();
-void playingBudWithLeaf();
-void playingLeaf();
+void playingBranchWithLeaf();
+void playingCollector();
 
 // ----- Game Helpers ------
 
 void updateBudFaces();
-void randomizeBudAffinity();
+void randomizeLeafGrowing();
 
 #endif

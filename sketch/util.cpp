@@ -51,6 +51,7 @@ void detectResetGame() {
 void detectEndGame() {
   FOREACH_FACE(f) {
     if (!isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f) == Message::END_GAME) {
+      blinkState = BlinkState::NONE;
       gameState = GameState::GAME_OVER;
       return;
     }

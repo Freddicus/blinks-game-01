@@ -60,13 +60,10 @@ void handlePlayingColors() {
       } else {
         setColor(COLOR_BRANCH);
       }
-      handleBranchBudColor();
+      handleBranchColor();
       break;
-    case BlinkState::BUD:
-      handleBranchBudColor();
-      break;
-    case BlinkState::LEAF:
-      handleLeafColor();
+    case BlinkState::COLLECTOR:
+      handleCollectorColor();
       break;
   }
 }
@@ -83,55 +80,21 @@ void handleGameTimerColor() {
   }
 }
 
-void handleBranchBudColor() {
+void handleBranchColor() {
   switch (branchState) {
-    case BranchBudState::NAB:
+    case BranchState::NAB:
       // don't override potential growth color
       break;
-    case BranchBudState::RANDOMIZING:
+    case BranchState::RANDOMIZING:
       sparkle();
       break;
-    case BranchBudState::BUDDING:
-      pulseColorOnFace(COLOR_BUD, activeBudFace, sharedPulseDimness);
-      break;
-    case BranchBudState::TOO_LATE:
-      pulseColor(RED, sharedPulseDimness);
-      break;
-    case BranchBudState::DEAD_BRANCH:
-      setColor(RED);
+    case BranchState::GREW_A_LEAF:
+      pulseColorOnFace(COLOR_BUD, activeLeafFace, sharedPulseDimness);
       break;
   }
 }
 
-void handleLeafColor() {
-  switch (leafState) {
-    case LeafState::NAL:
-      setColor(RED);
-      break;
-    case LeafState::DETACHED:
-      setColor(COLOR_NONE);
-      break;
-    case LeafState::NEW:
-      setColor(COLOR_NEW_LEAF);
-      break;
-    case LeafState::YOUNG:
-      spinColor(COLOR_YOUNG_LEAF, SPIN_SPEED_FAST_MS);
-      break;
-    case LeafState::MATURE:
-      spinColor(COLOR_MATURE_LEAF, SPIN_SPEED_MEDIUM_MS);
-      break;
-    case LeafState::DYING:
-      spinColor(COLOR_DYING_LEAF, SPIN_SPEED_SLOW_MS);
-      break;
-    case LeafState::DEAD_LEAF:
-      setColor(COLOR_DEAD_LEAF);
-      break;
-  }
-
-  if (!hasLeafFlashedGreeting && getLastValueReceivedOnFace(rearFace) == BRANCH_GREET_LEAF) {
-    hasLeafFlashedGreeting = true;
-    // TODO flash green for 500 ms
-  }
+void handleCollectorColor() {
 }
 
 void pulseColor(Color color, byte pulseDimness) {

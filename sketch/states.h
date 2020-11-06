@@ -14,27 +14,13 @@ enum BlinkState {
   SPROUT,
   TRUNK,
   BRANCH,
-  BUD,
-  LEAF
+  COLLECTOR
 };
 
-enum LeafState {
-  NAL,  // Not A Leaf
-  NEW,
-  YOUNG,
-  MATURE,
-  DYING,
-  DEAD_LEAF,
-  DETACHED
-};
-
-enum BranchBudState {
-  NAB,  // Not A Branch/Bud
+enum BranchState {
+  NAB,  // Not A Branch
   RANDOMIZING,
-  BUDDING,
-  GREW_A_LEAF,
-  TOO_LATE,
-  DEAD_BRANCH
+  GREW_A_LEAF
 };
 
 // --- simple messages ---
@@ -43,14 +29,9 @@ enum Message : byte {
   QUIET,
   SETUP_TRUNK,
   SETUP_BRANCH,
-  LOOKING_FOR_LEAF,
-  LOOKING_FOR_LEAF_ACK,
   START_THE_GAME,
   START_THE_CLOCK_NOW,
-  BRANCH_GREET_LEAF,
-  BRANCH_MATURE_LEAF,
-  BRANCH_MATURE_LEAF_ACK,
-  SEND_POISON,
+  LEAF_GREEN,
   END_GAME,
   RESET_GAME
 };
