@@ -18,6 +18,7 @@ extern Timer soilTimer;
 // ---- branch / bud play ----
 
 extern byte activeLeafFace;
+extern Color* activeLeafColor;
 extern byte branchState;
 
 // ---- leaf play ----
@@ -39,7 +40,8 @@ void playingCollector();
 
 // ----- Game Helpers ------
 
-void updateBudFaces();
+void updateLeafFaces();
 void randomizeLeafGrowing();
+Message getLeafMessageFromLeafColorIndex(byte leafColorIndex);
 
 #endif

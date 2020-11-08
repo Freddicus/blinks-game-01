@@ -91,14 +91,17 @@ void handleBranchColor() {
     case BranchState::GREW_A_LEAF:
       // eventually different colors here
       if (activeLeafFace != NOT_SET) {
-        setColorOnFace(GREEN, activeLeafFace);
+        setColorOnFace(*activeLeafColor, activeLeafFace);
       }
       break;
   }
 }
 
 void handleCollectorColor() {
-  setColor(GREEN);
+  setColor(leafColorsDim[collectorColorIndex]);
+  for (byte f = 0; f < numLeavesCollected; ++f) {
+    setColorOnFace(leafColors[collectorColorIndex], f - 1);
+  }
 }
 
 void pulseColor(Color color, byte pulseDimness) {

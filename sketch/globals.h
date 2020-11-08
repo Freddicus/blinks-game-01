@@ -6,6 +6,8 @@
 // -------- global constants --------
 
 const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
+const static Color leafColors[] = {GREEN, ORANGE, RED, YELLOW};
+const static Color leafColorsDim[] = {dim(GREEN, 20), dim(ORANGE, 20), dim(RED, 20), dim(YELLOW, 20)};
 #define CW_FROM_FACE(f, amt) faceOffsetArray[(f) + (amt)]
 #define CCW_FROM_FACE(f, amt) faceOffsetArray[6 + (f) - (amt)]
 #define OPPOSITE_FACE(f) CW_FROM_FACE((f), 3)
@@ -14,6 +16,7 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 // --- game values ---
 
 #define NUM_RESET_GAME_CLICKS 5
+#define NUM_COLLECTOR_COLORS 4
 
 #define FACE_SPROUT 0
 
@@ -45,6 +48,7 @@ extern bool isGameStarted;
 extern bool isGameTimerStarted;
 extern Timer gameTimer;
 
-extern bool gotSetupMsg;
+extern byte collectorColorIndex;
+extern byte numLeavesCollected;
 
 #endif

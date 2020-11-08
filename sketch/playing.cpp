@@ -22,10 +22,13 @@ bool hasExpiredGameTimerActed;
 // ---------------------------
 
 // holds face indexes for potential buds
-byte budFaces[5];
+byte leafFaces[5];
 
 // the face that's actively budding or NOT_SET if not budding
 byte activeLeafFace;
+
+// pointer to the active leaf color
+Color* activeLeafColor;
 
 // track the current state of the branch / bud
 byte branchState;
@@ -43,9 +46,16 @@ Timer growLeafCoinFlipTimer;
 // timer that controls how long to seek a leaf
 Timer leafTimer;
 
+// true is the branch is at the end
+bool isFinalBranch;
+
 // -------------------
 // ---- leaf play ----
 // -------------------
+
+// ------------------------
+// ---- collector play ----
+// ------------------------
 
 // --- misc ---
 
@@ -73,6 +83,10 @@ void initPlayVariables() {
   hasExpiredGameTimerActed = false;
 
   activeLeafFace = NOT_SET;
+  activeLeafColor = 0;
+
+  collectorColorIndex = 0;
+  numLeavesCollected = 0;
 
   gameState = GameState::PLAYING;
   blinkState = BlinkState::NONE;
@@ -153,7 +167,7 @@ void playingNone() {
         headFace = OPPOSITE_FACE(f);
 
         // determine where buds can go initially
-        updateBudFaces();
+        updateLeafFaces();
         return;  // for now, only read one message from NONE state
       default:
         continue;
@@ -284,7 +298,7 @@ void playingBranch() {
         headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : NOT_SET;
 
         // determine where buds can go after a split
-        updateBudFaces();
+        updateLeafFaces();
       }
 
       if (isSplit) {
@@ -328,15 +342,16 @@ void playingBranch() {
 }  //playingBranch
 
 void playingBranchWithLeaf() {
-  bool isFinalBranch = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
+  isFinalBranch = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
 
   if (activeLeafFace == NOT_SET) {
     // reset leaf signal timer for current future leaves
     isLeafSignalTimerStarted = false;
     leafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
-    activeLeafFace = isFinalBranch ? budFaces[random(5)] : budFaces[random(4)];
-    setValueSentOnFace(Message::LEAF_GREEN, activeLeafFace);
-    // TODO: curr color / message_color
+    activeLeafFace = isFinalBranch ? leafFaces[random(5)] : leafFaces[random(4)];
+    byte leafColorIndex = random(4);
+    *activeLeafColor = leafColors[leafColorIndex];
+    setValueSentOnFace(getLeafMessageFromLeafColorIndex(leafColorIndex), activeLeafFace);
   } else {
     if (leafTimer.isExpired()) {
       setValueSentOnFace(Message::QUIET, activeLeafFace);
@@ -347,23 +362,26 @@ void playingBranchWithLeaf() {
 }
 
 void playingCollector() {
+  if (numLeavesCollected == 0 && buttonDoubleClicked()) {
+    collectorColorIndex = (collectorColorIndex + 1) % NUM_COLLECTOR_COLORS;
+  }
 }
 
 // ----- Game Helpers ------
 
-void updateBudFaces() {
+void updateLeafFaces() {
   if (isSplit) {
-    budFaces[0] = CW_FROM_FACE(headFace, 1);
-    budFaces[1] = CW_FROM_FACE(headFace, 1);
-    budFaces[2] = CCW_FROM_FACE(headFace, 1);
-    budFaces[3] = CCW_FROM_FACE(headFace, 1);
-    budFaces[4] = OPPOSITE_FACE(rearFace);
+    leafFaces[0] = CW_FROM_FACE(headFace, 1);
+    leafFaces[1] = CW_FROM_FACE(headFace, 1);
+    leafFaces[2] = CCW_FROM_FACE(headFace, 1);
+    leafFaces[3] = CCW_FROM_FACE(headFace, 1);
+    leafFaces[4] = isFinalBranch ? OPPOSITE_FACE(rearFace) : CW_FROM_FACE(headFace, 1);
   } else {
-    budFaces[0] = CW_FROM_FACE(headFace, 1);
-    budFaces[1] = CW_FROM_FACE(headFace, 2);
-    budFaces[2] = CCW_FROM_FACE(headFace, 1);
-    budFaces[3] = CCW_FROM_FACE(headFace, 2);
-    budFaces[4] = OPPOSITE_FACE(rearFace);
+    leafFaces[0] = CW_FROM_FACE(headFace, 1);
+    leafFaces[1] = CW_FROM_FACE(headFace, 2);
+    leafFaces[2] = CCW_FROM_FACE(headFace, 1);
+    leafFaces[3] = CCW_FROM_FACE(headFace, 2);
+    leafFaces[4] = isFinalBranch ? OPPOSITE_FACE(rearFace) : CW_FROM_FACE(headFace, 1);
   }
 }
 
@@ -381,4 +399,18 @@ void randomizeLeafGrowing() {
     growLeafCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
     branchState = BranchState::RANDOMIZING;
   }
+}
+
+Message getLeafMessageFromLeafColorIndex(byte leafColorIndex) {
+  switch (leafColorIndex) {
+    case 0:
+      return Message::LEAF_GREEN;
+    case 1:
+      return Message::LEAF_YELLOW;
+    case 2:
+      return Message::LEAF_ORANGE;
+    case 3:
+      return Message::LEAF_RED;
+  }
+  return Message::QUIET;
 }

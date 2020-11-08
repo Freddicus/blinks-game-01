@@ -32,6 +32,9 @@ enum Message : byte {
   START_THE_GAME,
   START_THE_CLOCK_NOW,
   LEAF_GREEN,
+  LEAF_YELLOW,
+  LEAF_ORANGE,
+  LEAF_RED,
   END_GAME,
   RESET_GAME
 };

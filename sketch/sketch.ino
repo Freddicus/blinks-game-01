@@ -32,6 +32,9 @@ bool isGameStarted;
 bool isGameTimerStarted;
 Timer gameTimer;
 
+byte collectorColorIndex;
+byte numLeavesCollected;
+
 void setup() {
   randomize();
   initPlayVariables();
