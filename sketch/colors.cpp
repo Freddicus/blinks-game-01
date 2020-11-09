@@ -1,5 +1,8 @@
 #include "colors.h"
 
+const static Color leafColors[] = {GREEN, ORANGE, RED, YELLOW};
+const static Color leafColorsDim[] = {dim(GREEN, EMPTY_DIMNESS), dim(ORANGE, EMPTY_DIMNESS), dim(RED, EMPTY_DIMNESS), dim(YELLOW, EMPTY_DIMNESS)};
+
 void updateColors() {
   // initialize color each loop so we can see if we miss anything
   setColor(COLOR_NONE);
@@ -35,31 +38,10 @@ void handlePlayingColors() {
       }
       break;
     case BlinkState::TRUNK:
-      if (!isGameStarted) {
-        pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
-        if (isSplit) {
-          pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
-          pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
-        } else {
-          pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
-        }
-      } else {
-        setColor(COLOR_TRUNK);
-      }
+      handleTrunkColor();
       handleGameTimerColor();
       break;
     case BlinkState::BRANCH:
-      if (!isGameStarted) {
-        pulseColorOnFace(COLOR_BRANCH, rearFace, sharedPulseDimness);
-        if (isSplit) {
-          pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
-          pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
-        } else {
-          pulseColorOnFace(COLOR_BRANCH, headFace, sharedPulseDimness);
-        }
-      } else {
-        setColor(COLOR_BRANCH);
-      }
       handleBranchColor();
       break;
     case BlinkState::COLLECTOR:
@@ -74,6 +56,20 @@ void handleSoilColor() {
   }
 }
 
+void handleTrunkColor() {
+  if (!isGameStarted) {
+    pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
+    if (isSplit) {
+      pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
+      pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
+    } else {
+      pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
+    }
+  } else {
+    setColor(COLOR_TRUNK);
+  }
+}
+
 void handleGameTimerColor() {
   if (isGameTimerStarted && !gameTimer.isExpired()) {
     spinColor(COLOR_TRUNK, SPIN_SPEED_MEDIUM_MS);
@@ -81,6 +77,18 @@ void handleGameTimerColor() {
 }
 
 void handleBranchColor() {
+  if (!isGameStarted) {
+    pulseColorOnFace(COLOR_BRANCH, rearFace, sharedPulseDimness);
+    if (isSplit) {
+      pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
+      pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
+    } else {
+      pulseColorOnFace(COLOR_BRANCH, headFace, sharedPulseDimness);
+    }
+  } else {
+    setColor(COLOR_BRANCH);
+  }
+
   switch (branchState) {
     case BranchState::NAB:
       // don't override potential growth color
@@ -91,7 +99,7 @@ void handleBranchColor() {
     case BranchState::GREW_A_LEAF:
       // eventually different colors here
       if (activeLeafFace != NOT_SET) {
-        setColorOnFace(*activeLeafColor, activeLeafFace);
+        setColorOnFace(leafColors[activeBranchLeafColorIndex], activeLeafFace);
       }
       break;
   }

@@ -27,8 +27,8 @@ byte leafFaces[5];
 // the face that's actively budding or NOT_SET if not budding
 byte activeLeafFace;
 
-// pointer to the active leaf color
-Color* activeLeafColor;
+// index of the active leaf color
+byte activeBranchLeafColorIndex;
 
 // track the current state of the branch / bud
 byte branchState;
@@ -49,9 +49,12 @@ Timer leafTimer;
 // true is the branch is at the end
 bool isFinalBranch;
 
-// -------------------
-// ---- leaf play ----
-// -------------------
+// correlate to colors.cpp leafColors array
+const static Message leafColorMessages[] = {
+    Message::LEAF_GREEN,
+    Message::LEAF_ORANGE,
+    Message::LEAF_RED,
+    Message::LEAF_YELLOW};
 
 // ------------------------
 // ---- collector play ----
@@ -83,7 +86,7 @@ void initPlayVariables() {
   hasExpiredGameTimerActed = false;
 
   activeLeafFace = NOT_SET;
-  activeLeafColor = 0;
+  activeBranchLeafColorIndex = NOT_SET;
 
   collectorColorIndex = 0;
   numLeavesCollected = 0;
@@ -191,8 +194,12 @@ void playingSoil() {
 
 // starts the game timer
 void playingSprout() {
+  if (isGameTimerStarted) {
+    return;
+  }
+
   // allow undo sprout for overzealous players
-  if (!isGameTimerStarted && isAlone() && buttonDoubleClicked()) {
+  if (isAlone() && buttonDoubleClicked()) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -206,14 +213,14 @@ void playingSprout() {
   }
 
   // long press to start the game
-  if (!isGameTimerStarted && buttonLongPressed()) {
+  if (buttonLongPressed()) {
     isGameStarted = true;  // sprout's accounting
     setValueSentOnFace(Message::START_THE_GAME, headFace);
     messageSpacer.set(500);
     return;
   }
 
-  if (!isGameTimerStarted && isGameStarted && messageSpacer.isExpired()) {
+  if (isGameStarted && messageSpacer.isExpired()) {
     setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     isGameTimerStarted = true;  // sprout's accounting
     return;
@@ -348,14 +355,14 @@ void playingBranchWithLeaf() {
     // reset leaf signal timer for current future leaves
     isLeafSignalTimerStarted = false;
     leafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
-    activeLeafFace = isFinalBranch ? leafFaces[random(5)] : leafFaces[random(4)];
-    byte leafColorIndex = random(4);
-    *activeLeafColor = leafColors[leafColorIndex];
-    setValueSentOnFace(getLeafMessageFromLeafColorIndex(leafColorIndex), activeLeafFace);
+    activeLeafFace = leafFaces[random(5)];
+    activeBranchLeafColorIndex = random(100) % 4;
+    setValueSentOnFace(leafColorMessages[activeBranchLeafColorIndex], activeLeafFace);
   } else {
     if (leafTimer.isExpired()) {
       setValueSentOnFace(Message::QUIET, activeLeafFace);
       activeLeafFace = NOT_SET;
+      activeBranchLeafColorIndex = NOT_SET;
       branchState = BranchState::RANDOMIZING;
     }
   }
@@ -364,6 +371,20 @@ void playingBranchWithLeaf() {
 void playingCollector() {
   if (numLeavesCollected == 0 && buttonDoubleClicked()) {
     collectorColorIndex = (collectorColorIndex + 1) % NUM_COLLECTOR_COLORS;
+    return;
+  }
+
+  FOREACH_FACE(f) {
+    if (!isValueReceivedOnFaceExpired(f)) {
+      Message msg = (Message)getLastValueReceivedOnFace(f);
+      switch (msg) {
+        case Message::LEAF_GREEN:
+          if (collectorColorIndex == 0) {
+            ++numLeavesCollected;  // TODO: cooldown etc
+          }
+          break;
+      }
+    }
   }
 }
 
@@ -399,18 +420,4 @@ void randomizeLeafGrowing() {
     growLeafCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
     branchState = BranchState::RANDOMIZING;
   }
-}
-
-Message getLeafMessageFromLeafColorIndex(byte leafColorIndex) {
-  switch (leafColorIndex) {
-    case 0:
-      return Message::LEAF_GREEN;
-    case 1:
-      return Message::LEAF_YELLOW;
-    case 2:
-      return Message::LEAF_ORANGE;
-    case 3:
-      return Message::LEAF_RED;
-  }
-  return Message::QUIET;
 }
