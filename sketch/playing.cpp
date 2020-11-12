@@ -60,6 +60,8 @@ const static Message leafColorMessages[] = {
 // ---- collector play ----
 // ------------------------
 
+byte collectorState;
+
 // --- misc ---
 
 Timer messageSpacer;
@@ -94,6 +96,7 @@ void initPlayVariables() {
   gameState = GameState::PLAYING;
   blinkState = BlinkState::NONE;
   branchState = BranchState::NAB;
+  collectorState = CollectorState::DETACHED;
 
   soilTimer.set(0);
   leafTimer.set(0);
@@ -369,22 +372,50 @@ void playingBranchWithLeaf() {
 }
 
 void playingCollector() {
+  if (isAlone()) {
+    collectorState = CollectorState::DETACHED;
+  }
+
+  if (collectorState == CollectorState::COLLECTING) {
+    return;
+  }
+
   if (numLeavesCollected == 0 && buttonDoubleClicked()) {
     collectorColorIndex = (collectorColorIndex + 1) % NUM_COLLECTOR_COLORS;
     return;
   }
+
+  byte expectedIndex = NOT_SET;
 
   FOREACH_FACE(f) {
     if (!isValueReceivedOnFaceExpired(f)) {
       Message msg = (Message)getLastValueReceivedOnFace(f);
       switch (msg) {
         case Message::LEAF_GREEN:
-          if (collectorColorIndex == 0) {
-            ++numLeavesCollected;  // TODO: cooldown etc
-          }
+          expectedIndex = 0;
+          break;
+        case Message::LEAF_ORANGE:
+          expectedIndex = 1;
+          break;
+        case Message::LEAF_RED:
+          expectedIndex = 2;
+          break;
+        case Message::LEAF_YELLOW:
+          expectedIndex = 3;
+          break;
+        default:
           break;
       }
     }
+
+    if (expectedIndex != NOT_SET) {
+      break;
+    }
+  }
+
+  if (collectorColorIndex == expectedIndex) {
+    ++numLeavesCollected;
+    collectorState = CollectorState::COLLECTING;
   }
 }
 

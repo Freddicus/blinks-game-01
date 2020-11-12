@@ -23,6 +23,11 @@ enum BranchState {
   GREW_A_LEAF
 };
 
+enum CollectorState {
+  DETACHED,
+  COLLECTING
+};
+
 // --- simple messages ---
 
 enum Message : byte {

@@ -34,6 +34,7 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 extern byte gameState;
 extern byte blinkState;
 extern byte branchState;
+extern byte collectorState;
 
 extern byte rearFace;
 extern byte headFace;

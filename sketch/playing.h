@@ -21,7 +21,7 @@ extern byte activeLeafFace;
 extern byte activeBranchLeafColorIndex;
 extern byte branchState;
 
-// ---- leaf play ----
+// ---- collector play ----
 
 // ---- setup methods ----
 
@@ -37,6 +37,7 @@ void playingTrunk();
 void playingBranch();
 void playingBranchWithLeaf();
 void playingCollector();
+void playingCollectorConnected();
 
 // ----- Game Helpers ------
 

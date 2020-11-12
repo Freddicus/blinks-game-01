@@ -7,7 +7,6 @@
  * Repo: https://github.com/Freddicus/blinks-game-01
  * Discussion: https://forum.move38.com/t/new-game-wip-make-like-a-tree-and-leaf/549
  */
-
 #include <blinklib.h>
 
 #include "colors.h"
@@ -56,4 +55,8 @@ void loop() {
   }
 
   updateColors();
+
+  // TODO make this less ugly
+  buttonSingleClicked();
+  buttonLongPressed();
 }
