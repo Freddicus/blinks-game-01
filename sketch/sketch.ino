@@ -14,6 +14,7 @@
 #include "globals.h"
 #include "playing.h"
 #include "states.h"
+#include "debug.h"
 
 // -------- global variables (used in colors and playing) --------
 
@@ -42,6 +43,8 @@ void setup() {
 // --- game loop ---
 
 void loop() {
+  LOGLN(blinkState);
+
   switch (gameState) {
     case GameState::PLAYING:
       gameStatePlaying();

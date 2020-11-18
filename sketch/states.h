@@ -25,7 +25,8 @@ enum BranchState {
 
 enum CollectorState {
   DETACHED,
-  COLLECTING
+  COLLECTING,
+  COLLECTED
 };
 
 // --- simple messages ---

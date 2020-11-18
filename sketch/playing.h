@@ -30,6 +30,7 @@ void gameStatePlaying();
 
 // -------- Playing methods -------
 
+void detectSetupMessages();
 void playingNone();
 void playingSoil();
 void playingSprout();

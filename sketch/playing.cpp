@@ -103,6 +103,7 @@ void initPlayVariables() {
 }
 
 void gameStatePlaying() {
+  detectSetupMessages();
   switch (blinkState) {
     case BlinkState::NONE:
       playingNone();
@@ -127,20 +128,7 @@ void gameStatePlaying() {
 
 // -------- Playing methods -------
 
-void playingNone() {
-  // long press turns blink into soil
-  if (isAlone() && buttonLongPressed()) {
-    blinkState = BlinkState::SOIL;
-    soilTimer.set(SOIL_PLAY_TIME_MS);
-    return;
-  }
-
-  // double click into collector
-  if (isAlone() && buttonDoubleClicked()) {
-    blinkState = BlinkState::COLLECTOR;
-    return;
-  }
-
+void detectSetupMessages() {
   // we start off alone so...
   // let's find out when we become attached!
   // check for signals - can be from any stage of the game play
@@ -180,6 +168,26 @@ void playingNone() {
     }
   }
 }
+
+void playingNone() {
+  bool wasButtonLongPressed = buttonLongPressed();
+  bool wasButtonDoubledClicked = buttonDoubleClicked();
+
+  // long press turns blink into soil
+  if (isAlone() && wasButtonLongPressed) {
+    blinkState = BlinkState::SOIL;
+    soilTimer.set(SOIL_PLAY_TIME_MS);
+    return;
+  }
+
+  // double click into collector
+  if (isAlone() && wasButtonDoubledClicked) {
+    blinkState = BlinkState::COLLECTOR;
+    return;
+  }
+}
+
+
 
 // right now soil just exists to be a buffer transition to sprout
 // we'll animate something here
@@ -372,11 +380,17 @@ void playingBranchWithLeaf() {
 }
 
 void playingCollector() {
+  bool collectionAttempted = buttonSingleClicked();
+
   if (isAlone()) {
     collectorState = CollectorState::DETACHED;
   }
 
   if (collectorState == CollectorState::COLLECTING) {
+    if (collectionAttempted) {
+      ++numLeavesCollected;
+      collectorState = CollectorState::COLLECTED;
+    }
     return;
   }
 
@@ -414,7 +428,6 @@ void playingCollector() {
   }
 
   if (collectorColorIndex == expectedIndex) {
-    ++numLeavesCollected;
     collectorState = CollectorState::COLLECTING;
   }
 }
