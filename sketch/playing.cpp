@@ -103,26 +103,26 @@ void initPlayVariables() {
 }
 
 void gameStatePlaying() {
-  detectSetupMessages();
-  switch (blinkState) {
-    case BlinkState::NONE:
-      playingNone();
-      break;
-    case BlinkState::SOIL:
-      playingSoil();
-      break;
-    case BlinkState::SPROUT:
-      playingSprout();
-      break;
-    case BlinkState::TRUNK:
-      playingTrunk();
-      break;
-    case BlinkState::BRANCH:
-      playingBranch();
-      break;
-    case BlinkState::COLLECTOR:
-      playingCollector();
-      break;
+   switch (blinkState) {
+     case BlinkState::NONE:
+   detectSetupMessages();
+       playingNone();
+       break;
+     case BlinkState::SOIL:
+       playingSoil();
+       break;
+     case BlinkState::SPROUT:
+       playingSprout();
+       break;
+     case BlinkState::TRUNK:
+       playingTrunk();
+       break;
+     case BlinkState::BRANCH:
+       playingBranch();
+       break;
+     case BlinkState::COLLECTOR:
+       playingCollector();
+       break;
   }
 }
 
@@ -139,6 +139,9 @@ void detectSetupMessages() {
       // continue - nothing to read
       // also reset rearFace
       rearFace = NOT_SET;
+      headFace = NOT_SET;
+      headFaceLeft = NOT_SET;
+      headFaceRight = NOT_SET;
       continue;
     } else {
       // globally track our rear face position
@@ -170,9 +173,6 @@ void detectSetupMessages() {
 }
 
 void playingNone() {
-  bool wasButtonLongPressed = buttonLongPressed();
-  bool wasButtonDoubledClicked = buttonDoubleClicked();
-
   // long press turns blink into soil
   if (isAlone() && wasButtonLongPressed) {
     blinkState = BlinkState::SOIL;
@@ -193,7 +193,7 @@ void playingNone() {
 // we'll animate something here
 void playingSoil() {
   // allow undo switch to soil
-  if (isAlone() && buttonDoubleClicked()) {
+  if (isAlone() && wasButtonDoubledClicked) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -210,7 +210,7 @@ void playingSprout() {
   }
 
   // allow undo sprout for overzealous players
-  if (isAlone() && buttonDoubleClicked()) {
+  if (isAlone() && wasButtonDoubledClicked) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -224,7 +224,7 @@ void playingSprout() {
   }
 
   // long press to start the game
-  if (buttonLongPressed()) {
+  if (wasButtonLongPressed) {
     isGameStarted = true;  // sprout's accounting
     setValueSentOnFace(Message::START_THE_GAME, headFace);
     messageSpacer.set(500);
@@ -261,7 +261,7 @@ void playingTrunk() {
   switch (rxRear) {
     case Message::SETUP_TRUNK:
       // if our head is not receiving anything, and we're double-clicked, then we split
-      if (isHeadClear && buttonDoubleClicked()) {
+      if (isHeadClear && wasButtonDoubledClicked) {
         // allow undo - use not operator
         isSplit = !isSplit;
 
@@ -307,7 +307,7 @@ void playingBranch() {
   switch (rxRear) {
     case Message::SETUP_BRANCH:
       // if our head is not receiving anything, and we're double-clicked, then we split
-      if (isHeadClear && buttonDoubleClicked()) {
+      if (isHeadClear && wasButtonDoubledClicked) {
         // allow undo - use not operator
         isSplit = !isSplit;
 
@@ -380,21 +380,19 @@ void playingBranchWithLeaf() {
 }
 
 void playingCollector() {
-  bool collectionAttempted = buttonSingleClicked();
-
   if (isAlone()) {
     collectorState = CollectorState::DETACHED;
   }
 
   if (collectorState == CollectorState::COLLECTING) {
-    if (collectionAttempted) {
+    if (wasButtonSingleClicked) {
       ++numLeavesCollected;
       collectorState = CollectorState::COLLECTED;
     }
     return;
   }
 
-  if (numLeavesCollected == 0 && buttonDoubleClicked()) {
+  if (numLeavesCollected == 0 && wasButtonDoubledClicked) {
     collectorColorIndex = (collectorColorIndex + 1) % NUM_COLLECTOR_COLORS;
     return;
   }

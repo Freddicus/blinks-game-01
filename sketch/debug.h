@@ -12,7 +12,7 @@
 // anything).
 
 // Uncomment the line below to enable debugging.
-#define DEBUG_ENABLED
+//#define DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 #include <Serial.h>

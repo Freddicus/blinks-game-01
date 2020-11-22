@@ -35,6 +35,11 @@ Timer gameTimer;
 byte collectorColorIndex;
 byte numLeavesCollected;
 
+bool wasButtonLongPressed;
+bool wasButtonSingleClicked;
+bool wasButtonDoubledClicked;
+bool wasButtonTripleClicked;
+
 void setup() {
   randomize();
   initPlayVariables();
@@ -44,6 +49,11 @@ void setup() {
 
 void loop() {
   LOGLN(blinkState);
+
+  wasButtonLongPressed = buttonLongPressed();
+  wasButtonSingleClicked = buttonSingleClicked();
+  wasButtonDoubledClicked = buttonDoubleClicked();
+  wasButtonTripleClicked = buttonMultiClicked() && buttonClickCount() == 3;
 
   switch (gameState) {
     case GameState::PLAYING:
@@ -58,8 +68,4 @@ void loop() {
   }
 
   updateColors();
-
-  // TODO make this less ugly
-  buttonSingleClicked();
-  buttonLongPressed();
 }

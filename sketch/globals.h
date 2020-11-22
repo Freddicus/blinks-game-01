@@ -50,4 +50,9 @@ extern Timer gameTimer;
 extern byte collectorColorIndex;
 extern byte numLeavesCollected;
 
+extern bool wasButtonLongPressed;
+extern bool wasButtonSingleClicked;
+extern bool wasButtonDoubledClicked;
+extern bool wasButtonTripleClicked;
+
 #endif

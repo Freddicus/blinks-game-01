@@ -25,7 +25,7 @@ void updateSharedPulseDimness() {
 
 void detectResetGame() {
   // detect the initiator of game reset
-  if (!isAlone() && buttonLongPressed()) {
+  if (!isAlone() && wasButtonTripleClicked) {
     initPlayVariables();
     setValueSentOnAllFaces(Message::RESET_GAME);
     didResetGame = true;
