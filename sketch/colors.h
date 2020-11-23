@@ -22,6 +22,7 @@ void updateColors();
 
 void handlePlayingColors();
 void handleGameOverColors();
+void handleResetColors();
 void handleSoilColor();
 void handleTrunkColor();
 void handleGameTimerColor();

@@ -62,10 +62,6 @@ const static Message leafColorMessages[] = {
 
 byte collectorState;
 
-// --- misc ---
-
-Timer messageSpacer;
-
 // --- initialize ---
 
 // initializing unsigned 8-bit ints to NOT_SET is a little sketchy, but shouldn't be a problem

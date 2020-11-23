@@ -26,6 +26,7 @@ const static byte faceOffsetArray[] = {0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5};
 #define SPIN_SPEED_FAST_MS 250
 #define SPIN_SPEED_MEDIUM_MS 500  // tick-tock
 #define SPIN_SPEED_SLOW_MS 1000
+#define RESET_TIME 1500
 
 #define SOIL_PLAY_TIME_MS 2000
 
@@ -54,5 +55,8 @@ extern bool wasButtonLongPressed;
 extern bool wasButtonSingleClicked;
 extern bool wasButtonDoubledClicked;
 extern bool wasButtonTripleClicked;
+
+extern Timer messageSpacer;
+extern unsigned long gotResetSignalTime;
 
 #endif

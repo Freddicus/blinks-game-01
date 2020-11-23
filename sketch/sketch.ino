@@ -10,11 +10,12 @@
 #include <blinklib.h>
 
 #include "colors.h"
+#include "debug.h"
 #include "game_over.h"
 #include "globals.h"
 #include "playing.h"
+#include "reset.h"
 #include "states.h"
-#include "debug.h"
 
 // -------- global variables (used in colors and playing) --------
 
@@ -40,6 +41,9 @@ bool wasButtonSingleClicked;
 bool wasButtonDoubledClicked;
 bool wasButtonTripleClicked;
 
+Timer messageSpacer;
+unsigned long gotResetSignalTime;
+
 void setup() {
   randomize();
   initPlayVariables();
@@ -64,6 +68,9 @@ void loop() {
     case GameState::GAME_OVER:
       gameStateGameOver();
       detectResetGame();
+      break;
+    case GameState::RESET:
+      gameStateReset();
       break;
   }
 

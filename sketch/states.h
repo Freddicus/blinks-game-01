@@ -5,7 +5,8 @@
 
 enum GameState {
   PLAYING,
-  GAME_OVER
+  GAME_OVER,
+  RESET
 };
 
 enum BlinkState {

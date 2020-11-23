@@ -16,11 +16,25 @@ void updateColors() {
     case GameState::GAME_OVER:
       handleGameOverColors();
       break;
+    case GameState::RESET:
+      handleResetColors();
+      break;
   }
 }
 
 void handleGameOverColors() {
   sparkle();
+}
+
+void handleResetColors() {
+  unsigned long timeEllapsed = millis() - gotResetSignalTime;
+  if (timeEllapsed < RESET_TIME) {
+    int resetProgress = timeEllapsed % RESET_TIME;
+    byte brightnessMapped = map(resetProgress, 0, RESET_TIME, 0, 255);
+    setColor(dim(GREEN, brightnessMapped));
+  } else {
+    setColor(GREEN);
+  }
 }
 
 void handlePlayingColors() {
