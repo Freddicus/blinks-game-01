@@ -15,22 +15,19 @@
 #define COLOR_SOIL makeColorRGB(117, 94, 84)           // i know there is no brown, but...
 #define COLOR_SPROUT makeColorRGB(117, 199, 10)        // lime greenish
 #define COLOR_TRUNK makeColorRGB(166, 114, 17)         // basically orange
-#define COLOR_BUD COLOR_SPROUT                         // sprout color
-#define COLOR_BRANCH makeColorRGB(255, 192, 0)         // basically orange
-#define COLOR_NEW_LEAF makeColorRGB(119, 179, 89)      // another light green
-#define COLOR_YOUNG_LEAF makeColorRGB(71, 179, 73)     // light green
-#define COLOR_MATURE_LEAF makeColorRGB(51, 128, 52)    // deep green
-#define COLOR_DYING_LEAF makeColorRGB(230, 230, 92)    // pale yellow
-#define COLOR_DEAD_LEAF makeColorRGB(153, 107, 61)     // "brown"
+#define COLOR_BRANCH makeColorRGB(143, 90, 47)         // basically orange
+#define EMPTY_DIMNESS 100
 
 void updateColors();
 
 void handlePlayingColors();
 void handleGameOverColors();
+void handleResetColors();
 void handleSoilColor();
+void handleTrunkColor();
 void handleGameTimerColor();
-void handleBranchBudColor();
-void handleLeafColor();
+void handleBranchColor();
+void handleCollectorColor();
 
 void pulseColor(Color color, byte pulseDimness);
 void pulseColorOnFace(Color color, byte face, byte pulseDimness);

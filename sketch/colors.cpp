@@ -1,5 +1,8 @@
 #include "colors.h"
 
+const static Color leafColors[] = {GREEN, ORANGE, RED, YELLOW};
+const static Color leafColorsDim[] = {dim(GREEN, EMPTY_DIMNESS), dim(ORANGE, EMPTY_DIMNESS), dim(RED, EMPTY_DIMNESS), dim(YELLOW, EMPTY_DIMNESS)};
+
 void updateColors() {
   // initialize color each loop so we can see if we miss anything
   setColor(COLOR_NONE);
@@ -13,11 +16,25 @@ void updateColors() {
     case GameState::GAME_OVER:
       handleGameOverColors();
       break;
+    case GameState::RESET:
+      handleResetColors();
+      break;
   }
 }
 
 void handleGameOverColors() {
   sparkle();
+}
+
+void handleResetColors() {
+  unsigned long timeEllapsed = millis() - gotResetSignalTime;
+  if (timeEllapsed < RESET_TIME) {
+    int resetProgress = timeEllapsed % RESET_TIME;
+    byte brightnessMapped = map(resetProgress, 0, RESET_TIME, 0, 255);
+    setColor(dim(GREEN, brightnessMapped));
+  } else {
+    setColor(GREEN);
+  }
 }
 
 void handlePlayingColors() {
@@ -35,38 +52,14 @@ void handlePlayingColors() {
       }
       break;
     case BlinkState::TRUNK:
-      if (!isGameStarted) {
-        pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
-        if (isSplit) {
-          pulseColorOnFace(COLOR_TRUNK, headFaceLeft, sharedPulseDimness);
-          pulseColorOnFace(COLOR_TRUNK, headFaceRight, sharedPulseDimness);
-        } else {
-          pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
-        }
-      } else {
-        setColor(COLOR_TRUNK);
-      }
+      handleTrunkColor();
       handleGameTimerColor();
       break;
     case BlinkState::BRANCH:
-      if (!isGameStarted) {
-        pulseColorOnFace(COLOR_BRANCH, rearFace, sharedPulseDimness);
-        if (isSplit) {
-          pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
-          pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
-        } else {
-          pulseColorOnFace(COLOR_BRANCH, headFace, sharedPulseDimness);
-        }
-      } else {
-        setColor(COLOR_BRANCH);
-      }
-      handleBranchBudColor();
+      handleBranchColor();
       break;
-    case BlinkState::BUD:
-      handleBranchBudColor();
-      break;
-    case BlinkState::LEAF:
-      handleLeafColor();
+    case BlinkState::COLLECTOR:
+      handleCollectorColor();
       break;
   }
 }
@@ -77,60 +70,59 @@ void handleSoilColor() {
   }
 }
 
+void handleTrunkColor() {
+  if (!isGameStarted) {
+    pulseColorOnFace(COLOR_TRUNK, rearFace, sharedPulseDimness);
+    if (isSplit) {
+      pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
+      pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
+    } else {
+      pulseColorOnFace(COLOR_TRUNK, headFace, sharedPulseDimness);
+    }
+  } else {
+    setColor(COLOR_TRUNK);
+  }
+}
+
 void handleGameTimerColor() {
   if (isGameTimerStarted && !gameTimer.isExpired()) {
     spinColor(COLOR_TRUNK, SPIN_SPEED_MEDIUM_MS);
   }
 }
 
-void handleBranchBudColor() {
+void handleBranchColor() {
+  if (!isGameStarted) {
+    pulseColorOnFace(COLOR_BRANCH, rearFace, sharedPulseDimness);
+    if (isSplit) {
+      pulseColorOnFace(COLOR_BRANCH, headFaceLeft, sharedPulseDimness);
+      pulseColorOnFace(COLOR_BRANCH, headFaceRight, sharedPulseDimness);
+    } else {
+      pulseColorOnFace(COLOR_BRANCH, headFace, sharedPulseDimness);
+    }
+  } else {
+    setColor(COLOR_BRANCH);
+  }
+
   switch (branchState) {
-    case BranchBudState::NAB:
+    case BranchState::NAB:
       // don't override potential growth color
       break;
-    case BranchBudState::RANDOMIZING:
-      sparkle();
+    case BranchState::RANDOMIZING:
+      // sparkle();
       break;
-    case BranchBudState::BUDDING:
-      pulseColorOnFace(COLOR_BUD, activeBudFace, sharedPulseDimness);
-      break;
-    case BranchBudState::TOO_LATE:
-      pulseColor(RED, sharedPulseDimness);
-      break;
-    case BranchBudState::DEAD_BRANCH:
-      setColor(RED);
+    case BranchState::GREW_A_LEAF:
+      // eventually different colors here
+      if (activeLeafFace != NOT_SET) {
+        setColorOnFace(leafColors[activeBranchLeafColorIndex], activeLeafFace);
+      }
       break;
   }
 }
 
-void handleLeafColor() {
-  switch (leafState) {
-    case LeafState::NAL:
-      setColor(RED);
-      break;
-    case LeafState::DETACHED:
-      setColor(COLOR_NONE);
-      break;
-    case LeafState::NEW:
-      setColor(COLOR_NEW_LEAF);
-      break;
-    case LeafState::YOUNG:
-      spinColor(COLOR_YOUNG_LEAF, SPIN_SPEED_FAST_MS);
-      break;
-    case LeafState::MATURE:
-      spinColor(COLOR_MATURE_LEAF, SPIN_SPEED_MEDIUM_MS);
-      break;
-    case LeafState::DYING:
-      spinColor(COLOR_DYING_LEAF, SPIN_SPEED_SLOW_MS);
-      break;
-    case LeafState::DEAD_LEAF:
-      setColor(COLOR_DEAD_LEAF);
-      break;
-  }
-
-  if (!hasLeafFlashedGreeting && getLastValueReceivedOnFace(rearFace) == BRANCH_GREET_LEAF) {
-    hasLeafFlashedGreeting = true;
-    // TODO flash green for 500 ms
+void handleCollectorColor() {
+  setColor(leafColorsDim[collectorColorIndex]);
+  for (byte f = 0; f < numLeavesCollected; ++f) {
+    setColorOnFace(leafColors[collectorColorIndex], f - 1);
   }
 }
 

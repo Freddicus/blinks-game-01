@@ -7,13 +7,14 @@
  * Repo: https://github.com/Freddicus/blinks-game-01
  * Discussion: https://forum.move38.com/t/new-game-wip-make-like-a-tree-and-leaf/549
  */
-
 #include <blinklib.h>
 
 #include "colors.h"
+#include "debug.h"
 #include "game_over.h"
 #include "globals.h"
 #include "playing.h"
+#include "reset.h"
 #include "states.h"
 
 // -------- global variables (used in colors and playing) --------
@@ -32,6 +33,17 @@ bool isGameStarted;
 bool isGameTimerStarted;
 Timer gameTimer;
 
+byte collectorColorIndex;
+byte numLeavesCollected;
+
+bool wasButtonLongPressed;
+bool wasButtonSingleClicked;
+bool wasButtonDoubledClicked;
+bool wasButtonTripleClicked;
+
+Timer messageSpacer;
+unsigned long gotResetSignalTime;
+
 void setup() {
   randomize();
   initPlayVariables();
@@ -40,6 +52,13 @@ void setup() {
 // --- game loop ---
 
 void loop() {
+  LOGLN(blinkState);
+
+  wasButtonLongPressed = buttonLongPressed();
+  wasButtonSingleClicked = buttonSingleClicked();
+  wasButtonDoubledClicked = buttonDoubleClicked();
+  wasButtonTripleClicked = buttonMultiClicked() && buttonClickCount() == 3;
+
   switch (gameState) {
     case GameState::PLAYING:
       gameStatePlaying();
@@ -49,6 +68,9 @@ void loop() {
     case GameState::GAME_OVER:
       gameStateGameOver();
       detectResetGame();
+      break;
+    case GameState::RESET:
+      gameStateReset();
       break;
   }
 

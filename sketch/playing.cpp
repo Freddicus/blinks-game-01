@@ -22,10 +22,13 @@ bool hasExpiredGameTimerActed;
 // ---------------------------
 
 // holds face indexes for potential buds
-byte budFaces[5];
+byte leafFaces[5];
 
 // the face that's actively budding or NOT_SET if not budding
-byte activeBudFace;
+byte activeLeafFace;
+
+// index of the active leaf color
+byte activeBranchLeafColorIndex;
 
 // track the current state of the branch / bud
 byte branchState;
@@ -37,33 +40,27 @@ byte branchState;
 // true if the leaf signal timer has started
 bool isLeafSignalTimerStarted;
 
-// timer that controls whether or not bud is elegible to randomize to receive a leaf
-Timer becomeBudCoinFlipTimer;
+// timer that controls whether or not to flip a coin to grow a leaf
+Timer growLeafCoinFlipTimer;
 
 // timer that controls how long to seek a leaf
-Timer activeBudSeekingLeafTimer;
+Timer leafTimer;
 
-// timer that controls how long to show that the player was too late in attaching a leaf
-Timer tooLateCoolDownTimer;
+// true is the branch is at the end
+bool isFinalBranch;
 
-// timer that binds the leaf to the bud
-Timer leafSignalTimer;
+// correlate to colors.cpp leafColors array
+const static Message leafColorMessages[] = {
+    Message::LEAF_GREEN,
+    Message::LEAF_ORANGE,
+    Message::LEAF_RED,
+    Message::LEAF_YELLOW};
 
-// -------------------
-// ---- leaf play ----
-// -------------------
+// ------------------------
+// ---- collector play ----
+// ------------------------
 
-// TODO: not implemented
-Timer leafLifeTimer;
-
-// tracks the state of maturity for the leaf
-byte leafState;
-
-bool hasLeafFlashedGreeting;
-
-// --- misc ---
-
-Timer messageSpacer;
+byte collectorState;
 
 // --- initialize ---
 
@@ -75,7 +72,6 @@ void initPlayVariables() {
   isSplit = false;
 
   isLeafSignalTimerStarted = false;
-  hasLeafFlashedGreeting = false;
 
   isGameStarted = false;
 
@@ -87,53 +83,48 @@ void initPlayVariables() {
   isGameTimerStarted = false;
   hasExpiredGameTimerActed = false;
 
-  activeBudFace = NOT_SET;
+  activeLeafFace = NOT_SET;
+  activeBranchLeafColorIndex = NOT_SET;
+
+  collectorColorIndex = 0;
+  numLeavesCollected = 0;
 
   gameState = GameState::PLAYING;
   blinkState = BlinkState::NONE;
-  leafState = LeafState::NAL;
-  branchState = BranchBudState::NAB;
+  branchState = BranchState::NAB;
+  collectorState = CollectorState::DETACHED;
 
   soilTimer.set(0);
-  leafLifeTimer.set(0);
+  leafTimer.set(0);
 }
 
 void gameStatePlaying() {
-  switch (blinkState) {
-    case BlinkState::NONE:
-      playingNone();
-      break;
-    case BlinkState::SOIL:
-      playingSoil();
-      break;
-    case BlinkState::SPROUT:
-      playingSprout();
-      break;
-    case BlinkState::TRUNK:
-      playingTrunk();
-      break;
-    case BlinkState::BRANCH:
-      playingBranch();
-      break;
-    case BlinkState::BUD:
-      playingBud();
-      break;
-    case BlinkState::LEAF:
-      playingLeaf();
-      break;
+   switch (blinkState) {
+     case BlinkState::NONE:
+   detectSetupMessages();
+       playingNone();
+       break;
+     case BlinkState::SOIL:
+       playingSoil();
+       break;
+     case BlinkState::SPROUT:
+       playingSprout();
+       break;
+     case BlinkState::TRUNK:
+       playingTrunk();
+       break;
+     case BlinkState::BRANCH:
+       playingBranch();
+       break;
+     case BlinkState::COLLECTOR:
+       playingCollector();
+       break;
   }
 }
 
 // -------- Playing methods -------
 
-void playingNone() {
-  // double click turns blink into soil
-  if (isAlone() && buttonDoubleClicked()) {
-    blinkState = BlinkState::SOIL;
-    soilTimer.set(SOIL_PLAY_TIME_MS);
-    return;
-  }
-
+void detectSetupMessages() {
   // we start off alone so...
   // let's find out when we become attached!
   // check for signals - can be from any stage of the game play
@@ -144,6 +135,9 @@ void playingNone() {
       // continue - nothing to read
       // also reset rearFace
       rearFace = NOT_SET;
+      headFace = NOT_SET;
+      headFaceLeft = NOT_SET;
+      headFaceRight = NOT_SET;
       continue;
     } else {
       // globally track our rear face position
@@ -166,18 +160,7 @@ void playingNone() {
         headFace = OPPOSITE_FACE(f);
 
         // determine where buds can go initially
-        updateBudFaces();
-        return;  // for now, only read one message from NONE state
-      // a bud is looking for a leaf - so we become a leaf
-      case Message::LOOKING_FOR_LEAF:
-        blinkState = BlinkState::LEAF;
-        leafState = LeafState::NEW;
-
-        // this head face index is not currently used, but let's track it in case
-        headFace = OPPOSITE_FACE(f);
-
-        // tell the branch, it got a leaf (rearFace is the leaf stem)
-        setValueSentOnFace(Message::LOOKING_FOR_LEAF_ACK, rearFace);
+        updateLeafFaces();
         return;  // for now, only read one message from NONE state
       default:
         continue;
@@ -185,11 +168,28 @@ void playingNone() {
   }
 }
 
+void playingNone() {
+  // long press turns blink into soil
+  if (isAlone() && wasButtonLongPressed) {
+    blinkState = BlinkState::SOIL;
+    soilTimer.set(SOIL_PLAY_TIME_MS);
+    return;
+  }
+
+  // double click into collector
+  if (isAlone() && wasButtonDoubledClicked) {
+    blinkState = BlinkState::COLLECTOR;
+    return;
+  }
+}
+
+
+
 // right now soil just exists to be a buffer transition to sprout
 // we'll animate something here
 void playingSoil() {
   // allow undo switch to soil
-  if (isAlone() && buttonDoubleClicked()) {
+  if (isAlone() && wasButtonDoubledClicked) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -201,8 +201,12 @@ void playingSoil() {
 
 // starts the game timer
 void playingSprout() {
+  if (isGameTimerStarted) {
+    return;
+  }
+
   // allow undo sprout for overzealous players
-  if (!isGameTimerStarted && isAlone() && buttonDoubleClicked()) {
+  if (isAlone() && wasButtonDoubledClicked) {
     blinkState = BlinkState::NONE;
     return;
   }
@@ -216,14 +220,14 @@ void playingSprout() {
   }
 
   // long press to start the game
-  if (!isGameTimerStarted && buttonLongPressed()) {
+  if (wasButtonLongPressed) {
     isGameStarted = true;  // sprout's accounting
     setValueSentOnFace(Message::START_THE_GAME, headFace);
     messageSpacer.set(500);
     return;
   }
 
-  if (!isGameTimerStarted && isGameStarted && messageSpacer.isExpired()) {
+  if (isGameStarted && messageSpacer.isExpired()) {
     setValueSentOnFace(Message::START_THE_CLOCK_NOW, headFace);
     isGameTimerStarted = true;  // sprout's accounting
     return;
@@ -253,7 +257,7 @@ void playingTrunk() {
   switch (rxRear) {
     case Message::SETUP_TRUNK:
       // if our head is not receiving anything, and we're double-clicked, then we split
-      if (isHeadClear && buttonDoubleClicked()) {
+      if (isHeadClear && wasButtonDoubledClicked) {
         // allow undo - use not operator
         isSplit = !isSplit;
 
@@ -299,7 +303,7 @@ void playingBranch() {
   switch (rxRear) {
     case Message::SETUP_BRANCH:
       // if our head is not receiving anything, and we're double-clicked, then we split
-      if (isHeadClear && buttonDoubleClicked()) {
+      if (isHeadClear && wasButtonDoubledClicked) {
         // allow undo - use not operator
         isSplit = !isSplit;
 
@@ -308,7 +312,7 @@ void playingBranch() {
         headFaceRight = isSplit ? CCW_FROM_FACE(rearFace, 2) : NOT_SET;
 
         // determine where buds can go after a split
-        updateBudFaces();
+        updateLeafFaces();
       }
 
       if (isSplit) {
@@ -321,153 +325,137 @@ void playingBranch() {
       }
       break;
     case Message::START_THE_GAME:
-      isGameStarted = true;  // branch's accounting (not used)
-      if (isSplit) {
-        setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
-        setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
-      } else {
-        setValueSentOnFace(Message::START_THE_GAME, headFace);
-      }  // isSplit
+      if (isGameStarted == false) {
+        isGameStarted = true;  // branch's accounting (not used)
+        if (isSplit) {
+          setValueSentOnFace(Message::START_THE_GAME, headFaceLeft);
+          setValueSentOnFace(Message::START_THE_GAME, headFaceRight);
+        } else {
+          setValueSentOnFace(Message::START_THE_GAME, headFace);
+        }  // isSplit
 
-      // start randomize immediately
-      branchState = BranchBudState::RANDOMIZING;
+        // start randomize immediately
+        branchState = BranchState::RANDOMIZING;
+      }
       break;
     default:
       break;
   }  // switch (rxRear)
 
   switch (branchState) {
-    case BranchBudState::DEAD_BRANCH:
-      return;
-    case BranchBudState::NAB:
+    case BranchState::NAB:
       // do nothing
       break;
-    case BranchBudState::RANDOMIZING:
-      randomizeBudAffinity();
+    case BranchState::RANDOMIZING:
+      randomizeLeafGrowing();
       break;
-    default:
-      playingBud();
+    case BranchState::GREW_A_LEAF:
+      playingBranchWithLeaf();
       break;
   }  // switch (branchState)
 }  //playingBranch
 
-void playingBud() {
-  bool isFinalBranch = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
+void playingBranchWithLeaf() {
+  isFinalBranch = isSplit ? isValueReceivedOnFaceExpired(headFaceLeft) && isValueReceivedOnFaceExpired(headFaceRight) : isValueReceivedOnFaceExpired(headFace);
 
-  switch (branchState) {
-    case BranchBudState::BUDDING:
-      if (activeBudFace == NOT_SET) {
-        // reset leaf signal timer for current future leaves
-        isLeafSignalTimerStarted = false;
-        activeBudSeekingLeafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
-        activeBudFace = isFinalBranch ? budFaces[random(5)] : budFaces[random(4)];
-        setValueSentOnFace(Message::LOOKING_FOR_LEAF, activeBudFace);
-      } else {
-        if (activeBudSeekingLeafTimer.isExpired()) {
-          setValueSentOnFace(Message::QUIET, activeBudFace);
-          activeBudFace = NOT_SET;
-          branchState = BranchBudState::TOO_LATE;
-          tooLateCoolDownTimer.set(TOO_LATE_COOL_DOWN_MS);
-        } else {
-          if (getLastValueReceivedOnFace(activeBudFace) == LOOKING_FOR_LEAF_ACK) {
-            branchState = BranchBudState::GREW_A_LEAF;
-          }
-        }
-      }
-      break;
-    case BranchBudState::TOO_LATE:
-      if (tooLateCoolDownTimer.isExpired()) {
-        blinkState = BlinkState::BRANCH;
-        branchState = BranchBudState::NAB;
-      }
-      break;
-    case BranchBudState::GREW_A_LEAF:
-      playingBudWithLeaf();
-      break;
+  if (activeLeafFace == NOT_SET) {
+    // reset leaf signal timer for current future leaves
+    isLeafSignalTimerStarted = false;
+    leafTimer.set(random(ASK_FOR_LEAF_MIN_TIME_MS, ASK_FOR_LEAF_MAX_TIME_MS));
+    activeLeafFace = leafFaces[random(5)];
+    activeBranchLeafColorIndex = random(100) % 4;
+    setValueSentOnFace(leafColorMessages[activeBranchLeafColorIndex], activeLeafFace);
+  } else {
+    if (leafTimer.isExpired()) {
+      setValueSentOnFace(Message::QUIET, activeLeafFace);
+      activeLeafFace = NOT_SET;
+      activeBranchLeafColorIndex = NOT_SET;
+      branchState = BranchState::RANDOMIZING;
+    }
   }
 }
 
-void playingBudWithLeaf() {
-  byte rxBud = getLastValueReceivedOnFace(activeBudFace);
+void playingCollector() {
+  if (isAlone()) {
+    collectorState = CollectorState::DETACHED;
+  }
 
-  // leaf signal timer never started, so let's kick off the leaf maturity advancement signaling
-  if (!isLeafSignalTimerStarted) {
-    // send connected
-    isLeafSignalTimerStarted = true;
-    setValueSentOnFace(Message::BRANCH_GREET_LEAF, activeBudFace);
-    leafSignalTimer.set(random(LEAF_PLAY_TIME_MIN_MS, LEAF_PLAY_TIME_MAX_MS));
-    // don't advance maturity on initial leaf signal timer reset
+  if (collectorState == CollectorState::COLLECTING) {
+    if (wasButtonSingleClicked) {
+      ++numLeavesCollected;
+      collectorState = CollectorState::COLLECTED;
+    }
     return;
   }
 
-  // the leaf signal timer is expired... tell the leaf to mature by one, then set the timer
-  if (leafSignalTimer.isExpired()) {
-    setValueSentOnFace(Message::BRANCH_MATURE_LEAF, activeBudFace);
-    leafSignalTimer.set(random(LEAF_PLAY_TIME_MIN_MS, LEAF_PLAY_TIME_MAX_MS));
+  if (numLeavesCollected == 0 && wasButtonDoubledClicked) {
+    collectorColorIndex = (collectorColorIndex + 1) % NUM_COLLECTOR_COLORS;
+    return;
   }
 
-  if (rxBud == Message::BRANCH_MATURE_LEAF_ACK) {
-    setValueSentOnFace(Message::QUIET, activeBudFace);
-  } else if (rxBud == Message::SEND_POISON) {
-    branchState = BranchBudState::DEAD_BRANCH;
-  }
-}
+  byte expectedIndex = NOT_SET;
 
-void playingLeaf() {
-  byte rxRear = getLastValueReceivedOnFace(rearFace);
-  bool isRearValueExpired = isValueReceivedOnFaceExpired(rearFace);
-
-  // every time i get the message to mature, i acknowledge and advance my state by one
-  if (rxRear == Message::BRANCH_MATURE_LEAF && !isRearValueExpired) {
-    setValueSentOnFace(Message::BRANCH_MATURE_LEAF_ACK, rearFace);
-    if (leafState < LeafState::DEAD_LEAF) {
-      ++leafState;
+  FOREACH_FACE(f) {
+    if (!isValueReceivedOnFaceExpired(f)) {
+      Message msg = (Message)getLastValueReceivedOnFace(f);
+      switch (msg) {
+        case Message::LEAF_GREEN:
+          expectedIndex = 0;
+          break;
+        case Message::LEAF_ORANGE:
+          expectedIndex = 1;
+          break;
+        case Message::LEAF_RED:
+          expectedIndex = 2;
+          break;
+        case Message::LEAF_YELLOW:
+          expectedIndex = 3;
+          break;
+        default:
+          break;
+      }
     }
-  } else {
-    setValueSentOnFace(Message::QUIET, rearFace);
+
+    if (expectedIndex != NOT_SET) {
+      break;
+    }
   }
 
-  switch (leafState) {
-    case LeafState::NAL:
-    case LeafState::NEW:
-    case LeafState::YOUNG:
-    case LeafState::MATURE:
-    case LeafState::DYING:
-      break;
-    case LeafState::DEAD_LEAF:
-      setValueSentOnFace(Message::SEND_POISON, rearFace);
-      break;
+  if (collectorColorIndex == expectedIndex) {
+    collectorState = CollectorState::COLLECTING;
   }
 }
 
 // ----- Game Helpers ------
 
-void updateBudFaces() {
+void updateLeafFaces() {
   if (isSplit) {
-    budFaces[0] = CW_FROM_FACE(headFace, 1);
-    budFaces[1] = CW_FROM_FACE(headFace, 1);
-    budFaces[2] = CCW_FROM_FACE(headFace, 1);
-    budFaces[3] = CCW_FROM_FACE(headFace, 1);
-    budFaces[4] = OPPOSITE_FACE(rearFace);
+    leafFaces[0] = CW_FROM_FACE(headFace, 1);
+    leafFaces[1] = CW_FROM_FACE(headFace, 1);
+    leafFaces[2] = CCW_FROM_FACE(headFace, 1);
+    leafFaces[3] = CCW_FROM_FACE(headFace, 1);
+    leafFaces[4] = isFinalBranch ? OPPOSITE_FACE(rearFace) : CW_FROM_FACE(headFace, 1);
   } else {
-    budFaces[0] = CW_FROM_FACE(headFace, 1);
-    budFaces[1] = CW_FROM_FACE(headFace, 2);
-    budFaces[2] = CCW_FROM_FACE(headFace, 1);
-    budFaces[3] = CCW_FROM_FACE(headFace, 2);
-    budFaces[4] = OPPOSITE_FACE(rearFace);
+    leafFaces[0] = CW_FROM_FACE(headFace, 1);
+    leafFaces[1] = CW_FROM_FACE(headFace, 2);
+    leafFaces[2] = CCW_FROM_FACE(headFace, 1);
+    leafFaces[3] = CCW_FROM_FACE(headFace, 2);
+    leafFaces[4] = isFinalBranch ? OPPOSITE_FACE(rearFace) : CW_FROM_FACE(headFace, 1);
   }
 }
 
-void randomizeBudAffinity() {
-  bool becomeBud = flipCoin();
+void randomizeLeafGrowing() {
+  if (!growLeafCoinFlipTimer.isExpired()) {
+    return;
+  }
 
-  // should i be a bud?
-  if (becomeBud) {
-    blinkState = BlinkState::BUD;
-    branchState = BranchBudState::BUDDING;
+  bool growLeaf = flipCoin();
+
+  // should i grow a leaf?
+  if (growLeaf) {
+    branchState = BranchState::GREW_A_LEAF;
   } else {
-    becomeBudCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
-    blinkState = BlinkState::BRANCH;
-    branchState = BranchBudState::NAB;
+    growLeafCoinFlipTimer.set(BECOME_BUD_COIN_FLIP_COOLDOWN_MS);
+    branchState = BranchState::RANDOMIZING;
   }
 }
