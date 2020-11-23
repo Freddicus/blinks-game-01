@@ -10,40 +10,32 @@ The game is meant for users of a larger amount of Blinks. The more Blinks, the l
 
 The game starts with growing the tree. You can branch any time during the tree setup by double-clicking a Blink.
 
-1. Take any blink and double click it. This is now your soil. You can undo this action by double-clicking a second time.
-2. In five seconds your soil will sprout.
+1. Take any blink and long press it. This is now your soil. You can undo this action by double-clicking.
+2. In a couple of seconds your soil will sprout.
 3. Add a Blink. This becomes the trunk. Continue to build in a straight line.
 4. When the tree trunk grows to a decent height (four or five Blinks), double-click the last tile you added. It will branch into two paths.
 5. Add more Blinks to serve as branches as indicated by the growth path.
 6. Double-click a branch at any time to split again.
 7. When you're ready to play, long press the sprout and the timer will begin!
 
-An example setup (before play-testing 🙃) is five vertical Blinks (one soil and four trunk) and eight branch Blinks (four on each side). That will give you four leaves to play with.
+An example setup is three to five vertical Blinks (one soil and two to four trunk) and eight branch Blinks (four on each side). If you have a large collection of blinks, your can branch your branches and make the tree as large as you'd like. Make sure you have at least two collector Blinks per player.
 
-### Leaf Phase
+### Collection Phase
 
-Once you finish constructing your tree, long press the sprout to start the next phase of the game. You can play cooporatively to keep the tree alive, or players/teams can work to keep their own branch alive.
+Once you finish constructing your tree, long press the sprout to start the next phase of the game. 
 
-1. Press the sprout to send a growth signal.
-2. Random branches will indicate a bud position.
-3. Player attaches ununsed Blink to a bud to grow a leaf.
-4. The leaves mature and eventually brown.
-5. Player must remove dead leaves for fear of harming the tree.
-6. If all the branch segments die, then the player loses.
-
-More gameplay is still TBD with play testing. I might want to incorporate more clicking at this point rather than just simply adding and removing leaves for an amount of time.
+1. Random branches will indicate a leaf position.
+2. Player attaches their collector Blink to a matching color leaf and presses their button to collect a matching color leaf from the tree.
+3. The player who fills all of their collectors first wins.
+4. If the timer runs out everybody loses.
 
 ### Timer
 
-Once you start the game, a timer starts. The more trunk you have, the longer the timer. The timer works its way up the tree. To be implemented - make the leaf play becomes more and more frantic as the timer fills up.
+Once you start the game, a timer starts. The more trunk you have, the longer the timer. The timer works its way up the tree.
 
-### Branch Bud Affinity Idea
+### Reseting the Game
 
-Players will repeatedly click Blinks on their half of the branch to gain budding affinity. This could serve to distract the player from pruning and introduce a kind of tug-of-war.
-
-### Alternative Win-State Idea
-
-Instead of having branch-segments die, I'm thinking that maybe successful leaves reduce the timer and unpruned leaves increase the timer? Could be fun. Will need to branch the code and test this.
+Connect all of the blinks together and triple click one of them. Then separate all of them until the green pulsing stops.
 
 ## About Me
 
